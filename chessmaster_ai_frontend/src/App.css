@@ -6,6 +6,46 @@
   --border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Glassmorphism effect utilities */
+@media (min-width: 800px) {
+  .modern-glass-blur {
+    backdrop-filter: blur(15px) saturate(1.1);
+    -webkit-backdrop-filter: blur(15px) saturate(1.1);
+    background: rgba(255,255,255,0.17);
+    box-shadow: 0 2px 32px rgba(31,91,200,0.07);
+  }
+}
+
+.chessboard-modern .row .cell-modern:hover,
+.chessboard-modern .row .cell-modern:focus {
+  outline: 0;
+  box-shadow: 0 0 0 2.2px #ffe7c7, 0 2px 22px #8fffec33;
+  z-index: 5;
+  background: linear-gradient(110deg, #e0f7fa70 58%, #b9ecfd6c 100%);
+  transition: background .23s, box-shadow .19s, border .13s;
+}
+.chessboard-modern .row .cell-modern:active {
+  background: linear-gradient(125deg, #ffe0b8c1 62%, #b9e3fd59 100%);
+}
+
+/* Subtle blinking for AI hint dot */
+@keyframes blink {
+  from { opacity: 1; }
+  35% { opacity: 1; }
+  60% { opacity: 0.46;}
+  to { opacity: 0.20; }
+}
+
+/* Subtle shake animation for invalid move feedback */
+@keyframes shake {
+  0% { transform: translateX(0px);}
+  20% { transform: translateX(-2.3px);}
+  40% { transform: translateX(2.3px);}
+  60% { transform: translateX(-1.7px);}
+  80% { transform: translateX(1.7px);}
+  100% { transform: translateX(0px);}
+}
+
 body {
   margin: 0;
   font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;

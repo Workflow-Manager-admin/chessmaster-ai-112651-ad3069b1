@@ -84,6 +84,164 @@ function MainContainer() {
   function squaresEqual(a, b) {
     return a && b && a[0] === b[0] && a[1] === b[1];
   }
+  // Modern SVG piece renderer for glassmorphism
+  // PUBLIC_INTERFACE
+  function ChessPieceSVG({ type, color, highlight }) {
+    // Base colors for visual pop and glass
+    const main = color === "w" ? "#f9fafb" : "#11264a";
+    const shade = color === "w" ? "#e7e8ef" : "#47365e";
+    const edge = color === "w" ? "#8fc3ee" : "#63b3e6";
+    const glow = highlight
+      ? (color === "w" ? "#ffe7c785" : "#96ebff91")
+      : (color === "w" ? "#E7F3FF90" : "#345c8d85");
+    // Simple glass-shine-on gradient for highlight
+    const shineGradient = color === "w"
+      ? "url(#piece-glass-shine-w)"
+      : "url(#piece-glass-shine-b)";
+    // Each piece SVG: scalable, glassy, minimalist-modern icons.
+
+    // King, Queen, Rook, Bishop, Knight, Pawn
+    // SVGs based on minimal "glass" style with modern gradient fills.
+    switch (type) {
+      case "k":
+        return (
+          <svg width="38" height="38" viewBox="0 0 42 42" style={{transition:'filter 0.26s', filter: highlight ? `drop-shadow(0 0 16px ${glow})` : undefined}}>
+            <defs>
+              <radialGradient id="piece-glass-shine-w" cx="60%" cy="22%" r="65%">
+                <stop offset="0.05" stopColor="#fff" stopOpacity="0.85" />
+                <stop offset="0.54" stopColor="#deedfc" stopOpacity="0.13" />
+                <stop offset="1" stopColor="#ccd6ef" stopOpacity="0.07" />
+              </radialGradient>
+              <radialGradient id="piece-glass-shine-b" cx="58%" cy="19%" r="72%">
+                <stop offset="0.05" stopColor="#e8f4ff" stopOpacity="0.22" />
+                <stop offset="0.49" stopColor="#4466a4" stopOpacity="0.13" />
+                <stop offset="1" stopColor="#678eb4" stopOpacity="0.10" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="21" cy="35.6" rx="14" ry="4.2" fill={shade} opacity="0.33" />
+            <rect x="18" y="3.2" width="6" height="15.2" rx="2.7" fill={main} stroke={edge} strokeWidth="1.3"/>
+            <ellipse cx="21" cy="12.7" rx="7" ry="7.45" fill={main} stroke={edge} strokeWidth="1.6" />
+            <rect x="11.9" y="18.8" width="18.2" height="15.2" rx="6.2" fill={main} stroke={edge} strokeWidth="1.6" />
+            <ellipse cx="21" cy="29.7" rx="7.9" ry="6.9" fill={shade} stroke={edge} strokeWidth="1"/>
+            <ellipse cx="21" cy="15" rx="7" ry="7.43" fill={shineGradient} />
+          </svg>
+        );
+      case "q":
+        return (
+          <svg width="37" height="37" viewBox="0 0 41 41" style={{transition:'filter 0.26s', filter: highlight ? `drop-shadow(0 0 13px ${glow})` : undefined}}>
+            <defs>
+              <radialGradient id="piece-glass-shine-w" cx="65%" cy="23%" r="58%">
+                <stop offset="0.07" stopColor="#fff" stopOpacity="0.78" />
+                <stop offset="0.35" stopColor="#e7fbfc" stopOpacity="0.26" />
+                <stop offset="1" stopColor="#eaf7ff" stopOpacity="0.05" />
+              </radialGradient>
+              <radialGradient id="piece-glass-shine-b" cx="58%" cy="17%" r="64%">
+                <stop offset="0.07" stopColor="#f3f8fe" stopOpacity="0.14" />
+                <stop offset="0.4" stopColor="#a6beec" stopOpacity="0.12" />
+                <stop offset="1" stopColor="#6b94c9" stopOpacity="0.08" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="20.5" cy="34.9" rx="13.2" ry="3.6" fill={shade} opacity="0.26" />
+            {/* Crown spikes */}
+            <ellipse cx="8.5" cy="14" rx="1.9" ry="2.5" fill={main} stroke={edge} strokeWidth="1.2"/>
+            <ellipse cx="20.5" cy="7.5" rx="2.3" ry="2.6" fill={main} stroke={edge} strokeWidth="1.06"/>
+            <ellipse cx="32.6" cy="14" rx="1.9" ry="2.5" fill={main} stroke={edge} strokeWidth="1.2"/>
+            {/* Body */}
+            <rect x="11.9" y="15.7" width="17.2" height="16.2" rx="6.7" fill={main} stroke={edge} strokeWidth="1.5" />
+            <ellipse cx="20.5" cy="24.4" rx="8.2" ry="8.1" fill="url(#piece-glass-shine-w)" />
+            <ellipse cx="20.5" cy="14.9" rx="7.7" ry="7.2" fill={main} stroke={edge} strokeWidth="1.3"/>
+            <ellipse cx="20.5" cy="17.6" rx="7.2" ry="6.1" fill={shineGradient} />
+          </svg>
+        );
+      case "r":
+        return (
+          <svg width="34" height="34" viewBox="0 0 34 34" style={{transition:'filter 0.22s', filter: highlight ? `drop-shadow(0 0 12px ${glow})` : undefined}}>
+            <defs>
+              <radialGradient id="piece-glass-shine-w" cx="54%" cy="24%" r="70%">
+                <stop offset="0.11" stopColor="#fff" stopOpacity="0.84" />
+                <stop offset="0.65" stopColor="#c9eaf9" stopOpacity="0.14" />
+                <stop offset="1" stopColor="#f7fafd" stopOpacity="0.07" />
+              </radialGradient>
+              <radialGradient id="piece-glass-shine-b" cx="58%" cy="21%" r="60%">
+                <stop offset="0.12" stopColor="#daeaff" stopOpacity="0.23" />
+                <stop offset="0.48" stopColor="#5688be" stopOpacity="0.09" />
+                <stop offset="1" stopColor="#dbeafe" stopOpacity="0.04" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="17" cy="29.8" rx="9.5" ry="2.6" fill={shade} opacity="0.22" />
+            <rect x="9" y="7" width="15" height="19" rx="4" fill={main} stroke={edge} strokeWidth="1.3" />
+            <rect x="11.8" y="5.4" width="9.7" height="4" rx="1.4" fill={main} stroke={edge} strokeWidth="1"/>
+            <ellipse cx="17" cy="13" rx="7" ry="6" fill={shineGradient}/>
+          </svg>
+        );
+      case "b":
+        return (
+          <svg width="35" height="35" viewBox="0 0 35 35" style={{transition:'filter 0.22s', filter: highlight ? `drop-shadow(0 0 10px ${glow})` : undefined}}>
+            <defs>
+              <radialGradient id="piece-glass-shine-w" cx="68%" cy="16%" r="60%">
+                <stop offset="0.09" stopColor="#fff" stopOpacity="0.73" />
+                <stop offset="0.45" stopColor="#ededf9" stopOpacity="0.19" />
+                <stop offset="1" stopColor="#cfe0f7" stopOpacity="0.06" />
+              </radialGradient>
+              <radialGradient id="piece-glass-shine-b" cx="64%" cy="30%" r="52%">
+                <stop offset="0.12" stopColor="#e8f9fe" stopOpacity="0.17" />
+                <stop offset="0.46" stopColor="#8ec7df" stopOpacity="0.09" />
+                <stop offset="1" stopColor="#b4ddfa" stopOpacity="0.06" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="17.5" cy="30.7" rx="9.6" ry="2.5" fill={shade} opacity="0.18" />
+            <ellipse cx="17.5" cy="12.7" rx="6" ry="6.7" fill={main} stroke={edge} strokeWidth="1.2" />
+            <rect x="13" y="18" width="9" height="11" rx="3.6" fill={main} stroke={edge} strokeWidth="1.13"/>
+            <ellipse cx="17.5" cy="16.8" rx="6" ry="4.5" fill={shineGradient}/>
+          </svg>
+        );
+      case "n":
+        return (
+          <svg width="37" height="37" viewBox="0 0 37 37" style={{transition:'filter 0.21s', filter: highlight ? `drop-shadow(0 0 13px ${glow})` : undefined}}>
+            <defs>
+              <radialGradient id="piece-glass-shine-w" cx="57%" cy="13%" r="60%">
+                <stop offset="0.22" stopColor="#fff" stopOpacity="0.87" />
+                <stop offset="0.78" stopColor="#dfedff" stopOpacity="0.11" />
+                <stop offset="1" stopColor="#e7fbff" stopOpacity="0.06" />
+              </radialGradient>
+              <radialGradient id="piece-glass-shine-b" cx="61%" cy="30%" r="53%">
+                <stop offset="0.19" stopColor="#c4daee" stopOpacity="0.24" />
+                <stop offset="0.61" stopColor="#a1c7d6" stopOpacity="0.09" />
+                <stop offset="1" stopColor="#b8d5e0" stopOpacity="0.04" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="18.5" cy="30.7" rx="12" ry="2.7" fill={shade} opacity="0.16" />
+            {/* Horse silhouette, minimally */}
+            <path d="M13 26 Q13 19, 21.5 7 Q27 13.6, 19 15 Q20 20.5, 27 19 Q26.7 22.4, 22 26 Q18 28, 13 26"
+              stroke={edge} strokeWidth="1.2" fill={main} />
+            <ellipse cx="18" cy="14.5" rx="7" ry="5.7" fill={shineGradient}/>
+            <circle cx="16" cy="12.9" r="1.01" fill={edge} opacity="0.6"/>
+          </svg>
+        );
+      case "p":
+        return (
+          <svg width="27" height="27" viewBox="0 0 26 26" style={{transition:'filter 0.18s', filter: highlight ? `drop-shadow(0 0 7px ${glow})` : undefined}}>
+            <defs>
+              <radialGradient id="piece-glass-shine-w" cx="50%" cy="0%" r="66%">
+                <stop offset="0.18" stopColor="#fff" stopOpacity="0.83" />
+                <stop offset="0.57" stopColor="#e7eefb" stopOpacity="0.09" />
+                <stop offset="1" stopColor="#c6e7fc" stopOpacity="0.04" />
+              </radialGradient>
+              <radialGradient id="piece-glass-shine-b" cx="50%" cy="20%" r="80%">
+                <stop offset="0.23" stopColor="#e8f4fe" stopOpacity="0.09" />
+                <stop offset="1" stopColor="#aecaee" stopOpacity="0.02" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="13" cy="21.2" rx="7.4" ry="2" fill={shade} opacity="0.17" />
+            <ellipse cx="13" cy="7.6" rx="4" ry="4.45" fill={main} stroke={edge} strokeWidth="1.08" />
+            <rect x="7.08" y="12" width="12" height="7.2" rx="4" fill={main} stroke={edge} strokeWidth="1" />
+            <ellipse cx="13" cy="11.8" rx="4.2" ry="4.15" fill={shineGradient}/>
+          </svg>
+        );
+      default: // fallback (error)
+        return null;
+    }
+  }
   const pieceSymbols = {
     w: { k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙" },
     b: { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" }
@@ -655,32 +813,70 @@ function MainContainer() {
             />
           </div>
 
-          <div style={styles.chessboard}>
+          {/* Modern Chessboard with Glassmorphism, SVG pieces, gradient cells and subtle hover/animation */}
+          <div style={styles.chessboardModern}>
             {board.map((row, i) => (
               <div style={styles.row} key={i}>
                 {row.map((cell, j) => {
+                  // Determine board cell styling
+                  const isLight = (i + j) % 2 === 0;
+                  let cellGradient = isLight
+                    ? "linear-gradient(120deg, rgba(255,255,255,0.77) 60%, rgba(218,244,252,0.63) 100%)"
+                    : "linear-gradient(140deg, rgba(20,38,78,0.37) 55%, rgba(0,82,143,0.31) 100%)";
+                  let cellBackdrop =
+                    "backdrop-filter: blur(13px) saturate(1.2); -webkit-backdrop-filter: blur(13px) saturate(1.2)";
+                  let cellBorder = isLight
+                    ? "1.2px solid rgba(250,250,250,0.55)"
+                    : "1.2px solid rgba(20,40,69,0.14)";
+                  let cellShadow =
+                    isLight
+                      ? "0 2px 9px rgba(66,183,255,0.05), 0 1px 2px rgba(97,165,255,0.07)"
+                      : "0 2px 9px rgba(18,22,35,0.23), 0 1px 2px rgba(17,36,54,0.11)";
                   let cellStyle = {
-                    ...styles.cell,
-                    background:
-                      (i + j) % 2 === 0
-                        ? "#f0f0f0"
-                        : "#b8d2e6"
+                    ...styles.cellModern,
+                    background: cellGradient,
+                    boxShadow: cellShadow,
+                    border: cellBorder,
+                    position: "relative",
+                    cursor: cell && cell.color === turn && (status === "running" || status === "check")
+                      ? "pointer"
+                      : "default",
+                    transition: "background .21s, box-shadow .24s, border .15s, transform .13s",
                   };
+                  // Overlay for selection/feedback
                   if (selected && i === selected[0] && j === selected[1]) {
-                    cellStyle.background = "#ffd180";
+                    cellStyle.background = "linear-gradient(120deg,#ffe7c7a9 60%, #ffd180 100%)";
+                    cellStyle.boxShadow = "0 0 0 6px #ffd1805a, 0 2px 30px #ffedcc44";
+                    cellStyle.zIndex = 2;
                   }
                   if (invalidMove && invalidMove[1][0] === i && invalidMove[1][1] === j) {
-                    cellStyle.background = "#ffbdbd";
+                    cellStyle.background = "linear-gradient(128deg,#ffd7d7 58%, #ffbdbd 100%)";
+                    cellStyle.boxShadow = "0 0 0 7px rgba(255,50,60,0.27)";
+                    cellStyle.animation = "shake .20s cubic-bezier(.41, .01, .59, .97)";
                   }
+                  // Slight scale animation for move/select
+                  if (selected && i === selected[0] && j === selected[1]) cellStyle.transform = "scale(1.065)";
                   return (
                     <div
                       key={j}
                       style={cellStyle}
                       onClick={() => onCellClick(i, j)}
+                      tabIndex={0}
+                      aria-label={`${cell ? (cell.color === "w" ? "White " : "Black ") + cell.type.toUpperCase() : "Empty"} square ${String.fromCharCode(65 + j)}${8 - i}`}
                     >
-                      <span style={{ fontSize: "1.9rem", userSelect: "none" }}>
-                        {cell ? pieceSymbols[cell.color][cell.type] : ''}
-                      </span>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          userSelect: "none",
+                          transition: "transform .17s cubic-bezier(.51,.4,.29,1.31)"
+                        }}
+                      >
+                        {cell ? <ChessPieceSVG type={cell.type} color={cell.color} highlight={(selected && i === selected[0] && j === selected[1])} /> : ""}
+                      </div>
                     </div>
                   );
                 })}
@@ -810,7 +1006,8 @@ const styles = {
     fontWeight: 600,
     background: theme.surface,
     borderBottom: `2px solid ${theme.accent}`,
-    letterSpacing: 2
+    letterSpacing: 2,
+    boxShadow: "0 6px 32px rgba(106,182,254,0.035)"
   },
   logoSymbol: {
     color: theme.primary,
@@ -876,26 +1073,47 @@ const styles = {
     flexDirection: "column",
     alignItems: "center"
   },
-  chessboard: {
+  // Modern glassmorphism chessboard styles
+  chessboardModern: {
     display: "flex",
     flexDirection: "column",
-    border: `4px solid ${theme.primary}`,
-    borderRadius: "10px",
-    boxShadow: "0 2px 18px rgba(0,0,0,0.05)",
+    border: `4.2px solid #6ec2ff88`,
+    borderRadius: "20px",
+    boxShadow:
+      "0 6px 48px 0px rgba(35,142,206,0.10), 0 1.5px 20px 0 rgba(50,165,255,0.09)",
     overflow: "hidden",
-    width: 368,
-    height: 368,
-    background: theme.surface,
+    width: 372,
+    height: 372,
+    margin: 0,
+    background:
+      "linear-gradient(135deg, rgba(216,245,255,0.52) 0%, rgba(120,204,253,0.07) 100%)",
+    backdropFilter: "blur(16px) saturate(1.09)",
+    WebkitBackdropFilter: "blur(16px) saturate(1.09)",
+    zIndex: 2,
+    position: "relative",
+    transition: "box-shadow 0.23s, border 0.17s"
   },
   row: {
     display: "flex",
-    flex: "1 1 0%"
+    flex: "1 1 0%",
+    minHeight: 1,
+    zIndex: 1, // above background
   },
-  cell: {
+  cellModern: {
     width: 46,
     height: 46,
-    border: `1px solid ${theme.border}`,
-    transition: "background 0.2s"
+    borderRadius: "7px",
+    border: "none",
+    position: "relative",
+    overflow: "hidden",
+    background: "transparent",
+    boxShadow: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    outline: "none",
+    zIndex: 1,
+    transition: "background 0.18s, box-shadow 0.15s, border 0.1s, transform .15s"
   },
   boardLabel: {
     marginTop: 18,
