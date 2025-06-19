@@ -233,9 +233,13 @@ function MainContainer() {
   const [blackTime, setBlackTime] = useState(DEFAULT_TIME);
   const clockIntervalRef = useRef(null);
 
-  // Resume/pause logic for timers: run only if (status is running or check) and it's their turn
+  // Track if the first move has occurred: keep clocks paused until this is true
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Resume/pause logic for timers:
+  // Only run clocks if (status is running or check), it's their turn, AND first move has occurred
   useEffect(() => {
-    if (!(status === "running" || status === "check")) {
+    if (!(status === "running" || status === "check") || !hasStarted) {
       if (clockIntervalRef.current) {
         clearInterval(clockIntervalRef.current);
         clockIntervalRef.current = null;
@@ -255,8 +259,8 @@ function MainContainer() {
     return () => {
       if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
     };
-    // Only run when turn or status changes
-  }, [turn, status]);
+    // Only run when turn, status, or hasStarted changes
+  }, [turn, status, hasStarted]);
 
   // Stop timers at time out (when clock hits 0)
   useEffect(() => {
@@ -519,6 +523,9 @@ function MainContainer() {
 
       const nextStatus = getGameStatus(newBoard, localTurn === "w" ? "b" : "w", newCastling, newEnPassant);
       setStatus(nextStatus);
+
+      // Set hasStarted on the first AI move if it hasn't started yet (in theory, only if AI opens)
+      setHasStarted((prev) => prev || true);
     }, 460);
   }
 
@@ -573,6 +580,10 @@ function MainContainer() {
     if (piece.type==='p' && Math.abs(to[0]-from[0])===2) {
       newEnPassant = [ (from[0]+to[0])/2, from[1] ];
     }
+
+    // On the player's first move, set hasStarted to true
+    setHasStarted((prev) => prev || true);
+
     setBoard(newBoard);
     setMoveHistory([...moveHistory, moveText]);
     setInvalidMove(null);
@@ -631,14 +642,14 @@ function MainContainer() {
           <div style={clockStyles.clockBar}>
             <Clock
               time={whiteTime}
-              active={turn === "w" && (status === "running" || status === "check")}
+              active={hasStarted && turn === "w" && (status === "running" || status === "check")}
               color="w"
               label="Player"
             />
             <span style={clockStyles.vsDivider}>vs</span>
             <Clock
               time={blackTime}
-              active={turn === "b" && (status === "running" || status === "check")}
+              active={hasStarted && turn === "b" && (status === "running" || status === "check")}
               color="b"
               label="AI"
             />
