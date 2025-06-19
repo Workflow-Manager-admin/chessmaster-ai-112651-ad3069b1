@@ -330,3 +330,45 @@ body {
 .logo-symbol {
   color: var(--base-light);
 }
+
+/* Avatars for clock section */
+.chessclock-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  background: linear-gradient(117deg, #fafdff 50%, #dbf7ff 96%);
+  box-shadow: 0 2.5px 17px 2.5px #bafffd4d, 0 6px 28px #e3f2fc16;
+  border: 2.1px solid #e0faff;
+}
+.chessclock-avatar-ai {
+  background: linear-gradient(122deg, #e6f7ff 15%, #8ec6ff80 84%, #c2d6ff28 100%);
+  border: 2.1px solid #cdf8ff;
+}
+/* Inline SVG in avatar: no extra rules needed for responsiveness */
+
+@media (max-width: 670px) {
+  .brand-logo-circle {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-width: 1.7px !important;
+  }
+  .brand-title {
+    font-size: 1.18rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-glass {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+  .brandLogoCircle {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}

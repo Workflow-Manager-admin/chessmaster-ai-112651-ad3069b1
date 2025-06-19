@@ -789,9 +789,16 @@ function MainContainer() {
       {/* Main glass-like App Card */}
       <div className="main-glass-app-card">
         {/* Title/Header area with glass + backdrop */}
-        <header className="modern-glass-blur glass-card header-glass" style={styles.header}>
-          <span style={styles.logoSymbol}>♟️</span>
-          <span style={styles.appName}>ChessMaster AI</span>
+        <header className="modern-glass-blur glass-card header-glass" style={styles.headerEnhanced}>
+          <span style={styles.headerBrandArea}>
+            <span style={styles.brandLogoCircle}>
+              <span role="img" aria-label="Chess logo" style={styles.logoSymbolBig}>♟️</span>
+            </span>
+            <span style={styles.brandTextGroup}>
+              <span style={styles.brandTitle}>ChessMaster<span style={styles.brandAIBadge}>AI</span></span>
+              <span style={styles.brandSubtitle}>Modern Chess AI Duel</span>
+            </span>
+          </span>
         </header>
 
         {/* AI Difficulty selection at the top */}
@@ -819,20 +826,59 @@ function MainContainer() {
           {/* Chessboard + clocks in a floating card */}
           <section className="modern-glass-blur glass-card chessboard-glass-card" style={styles.chessboardSection}>
             {/* Clocks */}
-            <div className="chessclock-bar-glass" style={clockStyles.clockBar}>
-              <Clock
-                time={whiteTime}
-                active={hasStarted && turn === "w" && (status === "running" || status === "check")}
-                color="w"
-                label="Player"
-              />
+            <div className="chessclock-bar-glass" style={clockStyles.clockBarAvatars}>
+              <div style={clockStyles.clockWithAvatar}>
+                <div style={clockStyles.avatarCircleUser}>
+                  {/* user avatar: glassy minimal SVG (white) */}
+                  <svg width="38" height="38" viewBox="0 0 40 40">
+                    <defs>
+                      <radialGradient id="user-ava-glass" cx="65%" cy="24%" r="74%">
+                        <stop offset="0.11" stopColor="#fff" stopOpacity="0.83"/>
+                        <stop offset="0.48" stopColor="#e7fbfc" stopOpacity="0.38"/>
+                        <stop offset="1" stopColor="#eaf7ff" stopOpacity="0.14"/>
+                      </radialGradient>
+                    </defs>
+                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="url(#user-ava-glass)" opacity="0.91"/>
+                    <ellipse cx="20" cy="16" rx="7.3" ry="7.0" fill="#fafdff" stroke="#b5e7ff" strokeWidth="1.7"/>
+                    <ellipse cx="20" cy="27" rx="9.2" ry="5.1" fill="#e8f5ff"/>
+                  </svg>
+                </div>
+                <Clock
+                  time={whiteTime}
+                  active={hasStarted && turn === "w" && (status === "running" || status === "check")}
+                  color="w"
+                  label="You"
+                />
+              </div>
               <span style={clockStyles.vsDivider}>vs</span>
-              <Clock
-                time={blackTime}
-                active={hasStarted && turn === "b" && (status === "running" || status === "check")}
-                color="b"
-                label="AI"
-              />
+              <div style={clockStyles.clockWithAvatar}>
+                <div style={clockStyles.avatarCircleAI}>
+                  {/* AI avatar: glassy minimal SVG (blue) */}
+                  <svg width="38" height="38" viewBox="0 0 40 40">
+                    <defs>
+                      <radialGradient id="ai-ava-glass" cx="40%" cy="30%" r="76%">
+                        <stop offset="0.1" stopColor="#73a5ff" stopOpacity="0.36"/>
+                        <stop offset="0.5" stopColor="#def7ff" stopOpacity="0.23"/>
+                        <stop offset="1" stopColor="#558cd8" stopOpacity="0.15"/>
+                      </radialGradient>
+                    </defs>
+                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="url(#ai-ava-glass)" opacity="0.93"/>
+                    <ellipse cx="20" cy="16" rx="7.3" ry="7.0" fill="#d1f4fe" stroke="#5cd5fb" strokeWidth="1.5"/>
+                    <ellipse cx="20" cy="27" rx="9.2" ry="5.1" fill="#a8bcfe"/>
+                    {/* robot face minimalist */}
+                    <ellipse cx="20" cy="16" rx="3.6" ry="3.1" fill="#4fbefd" />
+                    <ellipse cx="17.9" cy="16.2" rx="0.66" ry="0.63" fill="#fff"/>
+                    <ellipse cx="22.1" cy="16.2" rx="0.66" ry="0.63" fill="#fff"/>
+                    <rect x="17" y="19" width="6" height="2" rx="1.1" fill="#88e3fd"/>
+                  </svg>
+                </div>
+                <Clock
+                  time={blackTime}
+                  active={hasStarted && turn === "b" && (status === "running" || status === "check")}
+                  color="b"
+                  label="AI"
+                />
+              </div>
             </div>
             {/* Chessboard */}
             <div className="chessboard-modern modern-glass-blur" style={styles.chessboardModern}>
@@ -1062,14 +1108,46 @@ const theme = {
 
 // --- CLOCK STYLES ---
 const clockStyles = {
-  clockBar: {
-    width: "365px",
+  clockBarAvatars: {
+    width: 384,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 18,
     marginTop: 8,
-    gap: 17
+    gap: 17,
+    position: "relative"
+  },
+  clockWithAvatar: {
+    display: "flex",
+    alignItems: "center",
+    gap: 11
+  },
+  avatarCircleUser: {
+    width: 44,
+    height: 44,
+    borderRadius: "50%",
+    background: "linear-gradient(112deg,#fafcffcb,#b0eff796 80%,#edfaff41 100%)",
+    boxShadow: "0 2.5px 17px 2.5px #c4faf34f, 0 6px 28px #c8e2fd1a",
+    border: "2.1px solid #ecfaff",
+    marginRight: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible"
+  },
+  avatarCircleAI: {
+    width: 44,
+    height: 44,
+    borderRadius: "50%",
+    background: "linear-gradient(118deg,#e5f0fdbe 10%,#9ee4fe96 73%,#c3caff36 100%)",
+    boxShadow: "0 2.5px 17px 2.5px #dbeef23a, 0 6px 28px #a6f2ff16",
+    border: "2.1px solid #d6f6ff",
+    marginRight: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible"
   },
   clockOuter: {
     border: "2.5px solid",
@@ -1125,24 +1203,75 @@ const styles = {
     fontFamily:
       "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif"
   },
-  header: {
+  // Header is now enhanced!
+  headerEnhanced: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
-    padding: "26px 40px 20px 40px",
-    fontSize: "2rem",
-    fontWeight: 600,
+    gap: 0,
+    padding: "28px 40px 22px 41px",
     background: theme.surface,
-    borderBottom: `2px solid ${theme.accent}`,
+    borderBottom: `2px solid ${theme.accent}44`,
     letterSpacing: 2,
-    boxShadow: "0 6px 32px rgba(106,182,254,0.035)"
+    boxShadow: "0 8px 38px 0px #8dd6ff23, 0 0.5px 9px #b8eafc23",
+    borderRadius: "24px 24px 18px 18px",
+    position: "relative"
   },
-  logoSymbol: {
+  headerBrandArea: {
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+    width: "100%"
+  },
+  brandLogoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: "50%",
+    background: "linear-gradient(131deg,#fafdff 50%,#c2e6ff 100%)",
+    boxShadow: "0 4px 24px #98f2f433, 0 2.5px 11px #c4efff27",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "2.8px solid #c2eaff5c",
+  },
+  logoSymbolBig: {
     color: theme.primary,
-    fontSize: "2.3rem"
+    fontSize: "2.9rem",
+    display: "block",
+    filter: "drop-shadow(0 1px 7px #b6eeff44)"
   },
-  appName: {
-    color: theme.accent
+  brandTextGroup: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start"
+  },
+  brandTitle: {
+    color: theme.accent,
+    fontSize: "2.12rem",
+    fontWeight: 800,
+    letterSpacing: 1.3,
+    textShadow: "0 1px 12px #aee4ff1c, 0 0.5px 6px #cdfaff13"
+  },
+  brandAIBadge: {
+    marginLeft: 12,
+    background: "linear-gradient(135deg,#e8f8ff 40%,#b7eaff 81%)",
+    color: "#377adc",
+    borderRadius: "11px",
+    fontWeight: 900,
+    fontSize: "1.23rem",
+    padding: "2.7px 15px 2.2px 6px",
+    boxShadow: "0 1px 7px #7aefff28, 0 2px 9px #b3f7ff16",
+    letterSpacing: 1.1,
+    fontFamily: "inherit"
+  },
+  brandSubtitle: {
+    color: "#42a3e7dd",
+    fontSize: "1.035rem",
+    fontWeight: 500,
+    marginTop: 2,
+    marginLeft: 2,
+    letterSpacing: 1.6,
+    textShadow: "0 1px 7px #aee4ff15"
   },
   difficultyBar: {
     width: "100%",
@@ -1291,7 +1420,8 @@ const styles = {
     background: "none",
     borderRadius: "6px",
     transition: "box-shadow .15s, background .15s, color .14s"
-  }
+  },
+  // Responsive tweaks (overwritten with media queries via App.css if needed)
 };
 
 export default MainContainer;
