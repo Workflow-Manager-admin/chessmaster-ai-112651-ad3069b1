@@ -1,0 +1,4 @@
+{
+    "command": "PORT=<port> BROWSER=none npm start",
+    "working_directory": "/home/kavia/workspace/code-generation/chessmaster-ai-112651-ad3069b1/chessmaster_ai_frontend"
+}
