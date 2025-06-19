@@ -764,6 +764,26 @@ function MainContainer() {
   }
 
   // --- RENDERING ---
+  // Compute legal moves for highlighting if a piece is selected
+  let legalMovesHighlight = [];
+  if (selected && board[selected[0]][selected[1]]) {
+    legalMovesHighlight = getLegalMoves(board, selected, turn, castling, enPassant)
+      .filter(({to}) => isMoveLegal(board, selected, to, turn, castling, enPassant))
+      .map((m) => m.to.join(","));
+  }
+
+  // For hover/click: use state to keep track of last clicked/pressed cell for ripple animation
+  const [activeCell, setActiveCell] = useState(null);
+  const [hoverCell, setHoverCell] = useState(null);
+
+  // Reset active ripple quickly (so animation is re-triggered)
+  useEffect(() => {
+    if (!activeCell) return;
+    const timeout = setTimeout(() => setActiveCell(null), 280);
+    return () => clearTimeout(timeout);
+  }, [activeCell]);
+
+  // Board rendering
   return (
     <div style={styles.wrapper}>
       {/* Main glass-like App Card */}
@@ -819,7 +839,6 @@ function MainContainer() {
               {board.map((row, i) => (
                 <div style={styles.row} key={i}>
                   {row.map((cell, j) => {
-                    // Carded glass/modern logic (as before)
                     const isLight = (i + j) % 2 === 0;
                     let cellGradient = isLight
                       ? "linear-gradient(120deg, rgba(255,255,255,0.77) 60%, rgba(218,244,252,0.63) 100%)"
@@ -831,6 +850,11 @@ function MainContainer() {
                       isLight
                         ? "0 2px 9px rgba(66,183,255,0.04), 0 1px 2px rgba(97,165,255,0.07)"
                         : "0 2px 9px rgba(18,22,35,0.17), 0 1px 2px rgba(17,36,54,0.05)";
+
+                    const cellKey = `${i},${j}`;
+                    const isLegalMove = legalMovesHighlight.includes(cellKey);
+
+                    // The base style first
                     let cellStyle = {
                       ...styles.cellModern,
                       background: cellGradient,
@@ -840,27 +864,89 @@ function MainContainer() {
                       cursor: cell && cell.color === turn && (status === "running" || status === "check")
                         ? "pointer"
                         : "default",
-                      transition: "background .2s, box-shadow .23s, border .13s, transform .11s",
+                      transition: "background .18s, box-shadow .21s, border .13s, transform .14s cubic-bezier(.51,.4,.29,1.31)",
+                      outline: "none"
                     };
+
+                    // Legal move highlight glassy animation ring
+                    if (isLegalMove) {
+                      cellStyle.boxShadow = (cellStyle.boxShadow ? cellStyle.boxShadow + ', ' : '') + "0 0 0 3.5px #24f0f48c, 0 0 22px #5fd6ff3c";
+                      cellStyle.background = isLight
+                        ? "linear-gradient(109deg,rgba(241,249,255,0.87) 60%, #a7fdff33 100%)"
+                        : "linear-gradient(131deg,rgba(55,150,255,0.18) 60%, #a7fdff33 100%)";
+                      cellStyle.zIndex = 3;
+                      cellStyle.animation = "legalMovePulse 0.56s cubic-bezier(.57,.12,.45,1.13) infinite alternate";
+                    }
+
+                    // Show selected cell
                     if (selected && i === selected[0] && j === selected[1]) {
                       cellStyle.background = "linear-gradient(120deg,#ffe7c7a9 60%, #ffd180 100%)";
-                      cellStyle.boxShadow = "0 0 0 6px #ffd1805a, 0 2px 30px #ffedcc44";
-                      cellStyle.zIndex = 2;
+                      cellStyle.boxShadow = "0 0 0 7px #ffd1807a, 0 2px 36px #ffebbe41";
+                      cellStyle.zIndex = 4;
+                      cellStyle.transform = "scale(1.067)";
                     }
+                    // Show active ripple (click/click-feedback)
+                    const cellIsActive = activeCell && activeCell[0] === i && activeCell[1] === j;
+                    if (cellIsActive) {
+                      cellStyle.boxShadow = (cellStyle.boxShadow ? cellStyle.boxShadow + ', ' : '') + "0 0 0 14px #76e1ff33";
+                      cellStyle.transform = "scale(0.97)";
+                    }
+                    // Animated hover effect
+                    const cellIsHover = hoverCell && hoverCell[0] === i && hoverCell[1] === j;
+                    if (cellIsHover && !cellIsActive) {
+                      cellStyle.filter = "brightness(1.10) blur(0.3px)";
+                      cellStyle.boxShadow = (cellStyle.boxShadow ? cellStyle.boxShadow + ', ' : '') + "0 0 12px #8fffec56";
+                    }
+                    // Invalid move (error feedback)
                     if (invalidMove && invalidMove[1][0] === i && invalidMove[1][1] === j) {
                       cellStyle.background = "linear-gradient(128deg,#ffd7d7 58%, #ffbdbd 100%)";
-                      cellStyle.boxShadow = "0 0 0 7px rgba(255,50,60,0.20)";
-                      cellStyle.animation = "shake .20s cubic-bezier(.41, .01, .59, .97)";
+                      cellStyle.boxShadow = "0 0 0 9px rgba(255,50,60,0.20)";
+                      cellStyle.animation = "shake .27s cubic-bezier(.41, .01, .59, .97)";
+                      cellStyle.zIndex = 8;
                     }
-                    if (selected && i === selected[0] && j === selected[1]) cellStyle.transform = "scale(1.065)";
+
+                    // LEGAL MOVE DOT (center)
+                    let legalDot = null;
+                    if (isLegalMove) {
+                      legalDot = (
+                        <span
+                          className="cell-legal-dot"
+                          style={{
+                            position: "absolute",
+                            left: "50%",
+                            top: "50%",
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            background: "linear-gradient(120deg,#3ef6f8 60%,#1b6ce2 100%)",
+                            opacity: cell ? 0.36 : 0.66,
+                            boxShadow: "0 2px 8px #94fff955, 0 1.2px 7px #68e0ff2d",
+                            transform: "translate(-50%,-50%) scale(1.14)",
+                            pointerEvents: "none",
+                            transition: "opacity .17s"
+                          }}
+                        />
+                      );
+                    }
+
+                    // Render piece
+                    const highlightPiece = selected && i === selected[0] && j === selected[1];
                     return (
                       <div
                         key={j}
                         style={cellStyle}
-                        onClick={() => onCellClick(i, j)}
+                        onClick={() => {
+                          setActiveCell([i, j]);
+                          onCellClick(i, j);
+                        }}
+                        onMouseEnter={() => setHoverCell([i, j])}
+                        onMouseLeave={() => setHoverCell(null)}
                         tabIndex={0}
                         aria-label={`${cell ? (cell.color === "w" ? "White " : "Black ") + cell.type.toUpperCase() : "Empty"} square ${String.fromCharCode(65 + j)}${8 - i}`}
+                        className="cell-modern"
                       >
+                        {/* Legal move highlight dot */}
+                        {legalDot}
                         <div
                           style={{
                             width: "100%",
@@ -872,7 +958,7 @@ function MainContainer() {
                             transition: "transform .15s cubic-bezier(.51,.4,.29,1.31)"
                           }}
                         >
-                          {cell ? <ChessPieceSVG type={cell.type} color={cell.color} highlight={(selected && i === selected[0] && j === selected[1])} /> : ""}
+                          {cell ? <ChessPieceSVG type={cell.type} color={cell.color} highlight={highlightPiece} /> : ""}
                         </div>
                       </div>
                     );
