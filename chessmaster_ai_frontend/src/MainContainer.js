@@ -766,154 +766,153 @@ function MainContainer() {
   // --- RENDERING ---
   return (
     <div style={styles.wrapper}>
-      {/* Title/Header area */}
-      <header style={styles.header}>
-        <span style={styles.logoSymbol}>♟️</span>
-        <span style={styles.appName}>ChessMaster AI</span>
-      </header>
+      {/* Main glass-like App Card */}
+      <div className="main-glass-app-card">
+        {/* Title/Header area with glass + backdrop */}
+        <header className="modern-glass-blur glass-card header-glass" style={styles.header}>
+          <span style={styles.logoSymbol}>♟️</span>
+          <span style={styles.appName}>ChessMaster AI</span>
+        </header>
 
-      {/* AI Difficulty selection at the top */}
-      <div style={styles.difficultyBar}>
-        <span style={styles.difficultyLabel}>AI Difficulty:&nbsp;</span>
-        <select
-          value={aiDifficulty}
-          onChange={e => setAiDifficulty(e.target.value)}
-          style={styles.difficultySelect}
-          aria-label="Select AI Difficulty"
-        >
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-        </select>
-        {aiThinking && (
-          <span style={styles.thinkingHint}>
-            <span style={styles.thinkingDot}>•</span> AI is thinking...
-          </span>
-        )}
-      </div>
+        {/* AI Difficulty selection at the top */}
+        <div className="modern-glass-blur glass-card diffbar-glass" style={styles.difficultyBar}>
+          <span style={styles.difficultyLabel}>AI Difficulty:&nbsp;</span>
+          <select
+            value={aiDifficulty}
+            onChange={e => setAiDifficulty(e.target.value)}
+            style={styles.difficultySelect}
+            aria-label="Select AI Difficulty"
+          >
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+          {aiThinking && (
+            <span style={styles.thinkingHint}>
+              <span style={styles.thinkingDot}>•</span> AI is thinking...
+            </span>
+          )}
+        </div>
 
-      <div style={styles.gridContainer}>
-        {/* Center Chessboard and clocks */}
-        <section style={styles.chessboardSection}>
-
-          {/* --- Clocks UI --- */}
-          <div style={clockStyles.clockBar}>
-            <Clock
-              time={whiteTime}
-              active={hasStarted && turn === "w" && (status === "running" || status === "check")}
-              color="w"
-              label="Player"
-            />
-            <span style={clockStyles.vsDivider}>vs</span>
-            <Clock
-              time={blackTime}
-              active={hasStarted && turn === "b" && (status === "running" || status === "check")}
-              color="b"
-              label="AI"
-            />
-          </div>
-
-          {/* Modern Chessboard with Glassmorphism, SVG pieces, gradient cells and subtle hover/animation */}
-          <div style={styles.chessboardModern}>
-            {board.map((row, i) => (
-              <div style={styles.row} key={i}>
-                {row.map((cell, j) => {
-                  // Determine board cell styling
-                  const isLight = (i + j) % 2 === 0;
-                  let cellGradient = isLight
-                    ? "linear-gradient(120deg, rgba(255,255,255,0.77) 60%, rgba(218,244,252,0.63) 100%)"
-                    : "linear-gradient(140deg, rgba(20,38,78,0.37) 55%, rgba(0,82,143,0.31) 100%)";
-                  let cellBackdrop =
-                    "backdrop-filter: blur(13px) saturate(1.2); -webkit-backdrop-filter: blur(13px) saturate(1.2)";
-                  let cellBorder = isLight
-                    ? "1.2px solid rgba(250,250,250,0.55)"
-                    : "1.2px solid rgba(20,40,69,0.14)";
-                  let cellShadow =
-                    isLight
-                      ? "0 2px 9px rgba(66,183,255,0.05), 0 1px 2px rgba(97,165,255,0.07)"
-                      : "0 2px 9px rgba(18,22,35,0.23), 0 1px 2px rgba(17,36,54,0.11)";
-                  let cellStyle = {
-                    ...styles.cellModern,
-                    background: cellGradient,
-                    boxShadow: cellShadow,
-                    border: cellBorder,
-                    position: "relative",
-                    cursor: cell && cell.color === turn && (status === "running" || status === "check")
-                      ? "pointer"
-                      : "default",
-                    transition: "background .21s, box-shadow .24s, border .15s, transform .13s",
-                  };
-                  // Overlay for selection/feedback
-                  if (selected && i === selected[0] && j === selected[1]) {
-                    cellStyle.background = "linear-gradient(120deg,#ffe7c7a9 60%, #ffd180 100%)";
-                    cellStyle.boxShadow = "0 0 0 6px #ffd1805a, 0 2px 30px #ffedcc44";
-                    cellStyle.zIndex = 2;
-                  }
-                  if (invalidMove && invalidMove[1][0] === i && invalidMove[1][1] === j) {
-                    cellStyle.background = "linear-gradient(128deg,#ffd7d7 58%, #ffbdbd 100%)";
-                    cellStyle.boxShadow = "0 0 0 7px rgba(255,50,60,0.27)";
-                    cellStyle.animation = "shake .20s cubic-bezier(.41, .01, .59, .97)";
-                  }
-                  // Slight scale animation for move/select
-                  if (selected && i === selected[0] && j === selected[1]) cellStyle.transform = "scale(1.065)";
-                  return (
-                    <div
-                      key={j}
-                      style={cellStyle}
-                      onClick={() => onCellClick(i, j)}
-                      tabIndex={0}
-                      aria-label={`${cell ? (cell.color === "w" ? "White " : "Black ") + cell.type.toUpperCase() : "Empty"} square ${String.fromCharCode(65 + j)}${8 - i}`}
-                    >
+        {/* Responsive Grid */}
+        <div className="mc-gridcontainer glasspanel-layout" style={styles.gridContainer}>
+          {/* Chessboard + clocks in a floating card */}
+          <section className="modern-glass-blur glass-card chessboard-glass-card" style={styles.chessboardSection}>
+            {/* Clocks */}
+            <div className="chessclock-bar-glass" style={clockStyles.clockBar}>
+              <Clock
+                time={whiteTime}
+                active={hasStarted && turn === "w" && (status === "running" || status === "check")}
+                color="w"
+                label="Player"
+              />
+              <span style={clockStyles.vsDivider}>vs</span>
+              <Clock
+                time={blackTime}
+                active={hasStarted && turn === "b" && (status === "running" || status === "check")}
+                color="b"
+                label="AI"
+              />
+            </div>
+            {/* Chessboard */}
+            <div className="chessboard-modern modern-glass-blur" style={styles.chessboardModern}>
+              {board.map((row, i) => (
+                <div style={styles.row} key={i}>
+                  {row.map((cell, j) => {
+                    // Carded glass/modern logic (as before)
+                    const isLight = (i + j) % 2 === 0;
+                    let cellGradient = isLight
+                      ? "linear-gradient(120deg, rgba(255,255,255,0.77) 60%, rgba(218,244,252,0.63) 100%)"
+                      : "linear-gradient(140deg, rgba(20,38,78,0.37) 55%, rgba(0,82,143,0.31) 100%)";
+                    let cellBorder = isLight
+                      ? "1.2px solid rgba(250,250,250,0.29)"
+                      : "1.2px solid rgba(20,40,69,0.09)";
+                    let cellShadow =
+                      isLight
+                        ? "0 2px 9px rgba(66,183,255,0.04), 0 1px 2px rgba(97,165,255,0.07)"
+                        : "0 2px 9px rgba(18,22,35,0.17), 0 1px 2px rgba(17,36,54,0.05)";
+                    let cellStyle = {
+                      ...styles.cellModern,
+                      background: cellGradient,
+                      boxShadow: cellShadow,
+                      border: cellBorder,
+                      position: "relative",
+                      cursor: cell && cell.color === turn && (status === "running" || status === "check")
+                        ? "pointer"
+                        : "default",
+                      transition: "background .2s, box-shadow .23s, border .13s, transform .11s",
+                    };
+                    if (selected && i === selected[0] && j === selected[1]) {
+                      cellStyle.background = "linear-gradient(120deg,#ffe7c7a9 60%, #ffd180 100%)";
+                      cellStyle.boxShadow = "0 0 0 6px #ffd1805a, 0 2px 30px #ffedcc44";
+                      cellStyle.zIndex = 2;
+                    }
+                    if (invalidMove && invalidMove[1][0] === i && invalidMove[1][1] === j) {
+                      cellStyle.background = "linear-gradient(128deg,#ffd7d7 58%, #ffbdbd 100%)";
+                      cellStyle.boxShadow = "0 0 0 7px rgba(255,50,60,0.20)";
+                      cellStyle.animation = "shake .20s cubic-bezier(.41, .01, .59, .97)";
+                    }
+                    if (selected && i === selected[0] && j === selected[1]) cellStyle.transform = "scale(1.065)";
+                    return (
                       <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          userSelect: "none",
-                          transition: "transform .17s cubic-bezier(.51,.4,.29,1.31)"
-                        }}
+                        key={j}
+                        style={cellStyle}
+                        onClick={() => onCellClick(i, j)}
+                        tabIndex={0}
+                        aria-label={`${cell ? (cell.color === "w" ? "White " : "Black ") + cell.type.toUpperCase() : "Empty"} square ${String.fromCharCode(65 + j)}${8 - i}`}
                       >
-                        {cell ? <ChessPieceSVG type={cell.type} color={cell.color} highlight={(selected && i === selected[0] && j === selected[1])} /> : ""}
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            userSelect: "none",
+                            transition: "transform .15s cubic-bezier(.51,.4,.29,1.31)"
+                          }}
+                        >
+                          {cell ? <ChessPieceSVG type={cell.type} color={cell.color} highlight={(selected && i === selected[0] && j === selected[1])} /> : ""}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-          <div style={styles.boardLabel}>
-            {status === "checkmate"
-              ? `${
-                  turn === "w"
-                    ? blackTime === 0
-                      ? "Out of time! White loses"
-                      : "Checkmate! Black wins"
-                    : whiteTime === 0
-                    ? "Out of time! Black loses"
-                    : "Checkmate! White wins"
-                }`
-              : status === "stalemate"
-              ? "Stalemate: Draw"
-              : status === "check"
-              ? `${turn === "w" ? "White" : "Black"} in check`
-              : (turn === "w" ? "White" : "Black") + "'s Move"}
-            {invalidMove && (
-              <><br /><span style={{ color: "crimson", fontWeight: 500, fontSize:"1.07rem" }}>Illegal move</span></>
-            )}
-          </div>
-        </section>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            {/* Board label/status as a glass under-banner */}
+            <div className="glass-card glass-status-glass" style={styles.boardLabel}>
+              {status === "checkmate"
+                ? `${
+                    turn === "w"
+                      ? blackTime === 0
+                        ? "Out of time! White loses"
+                        : "Checkmate! Black wins"
+                      : whiteTime === 0
+                      ? "Out of time! Black loses"
+                      : "Checkmate! White wins"
+                  }`
+                : status === "stalemate"
+                ? "Stalemate: Draw"
+                : status === "check"
+                ? `${turn === "w" ? "White" : "Black"} in check`
+                : (turn === "w" ? "White" : "Black") + "'s Move"}
+              {invalidMove && (
+                <><br /><span style={{ color: "crimson", fontWeight: 500, fontSize:"1.07rem" }}>Illegal move</span></>
+              )}
+            </div>
+          </section>
 
-        {/* Side Move History */}
-        <aside style={styles.moveHistorySection}>
-          <h3 style={styles.historyTitle}>Move History</h3>
-          <ol style={styles.moveList}>
-            {moveHistory.map((move, idx) => (
-              <li key={idx} style={styles.moveItem}>{move}</li>
-            ))}
-          </ol>
-        </aside>
+          {/* Move History: glassy modern style, carded, scrollable */}
+          <aside className="modern-glass-blur glass-card history-glass-card" style={styles.moveHistorySection}>
+            <h3 style={styles.historyTitle}>Move History</h3>
+            <ol style={styles.moveList}>
+              {moveHistory.map((move, idx) => (
+                <li key={idx} style={styles.moveItem}>{move}</li>
+              ))}
+            </ol>
+          </aside>
+        </div>
       </div>
     </div>
   );
