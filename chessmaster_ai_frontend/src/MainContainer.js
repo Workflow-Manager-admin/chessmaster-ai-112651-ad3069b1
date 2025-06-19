@@ -238,7 +238,7 @@ function MainContainer() {
       } else {
         // Try make move
         if (isMoveLegal(board, selected, [r, c], turn, castling, enPassant)) {
-          playMove(selected, [r, c]);
+          playerMove(selected, [r, c]);
           setSelected(null);
         } else {
           setInvalidMove([selected, [r, c]]);
@@ -247,8 +247,101 @@ function MainContainer() {
     }
   }
 
-  // Play a move (assume already validated)
-  function playMove(from, to) {
+  // AI move logic: select and play a random legal move for the given color (AI plays black)
+  function aiMove(currentBoard, currentTurn, currentCastling, currentEnPassant, currentHistory) {
+    // Find all legal moves for AI color
+    const moves = [];
+    for (let r = 0; r < 8; ++r) {
+      for (let c = 0; c < 8; ++c) {
+        if (currentBoard[r][c]?.color === currentTurn) {
+          const pieceMoves = getLegalMoves(currentBoard, [r,c], currentTurn, currentCastling, currentEnPassant)
+            .filter(m => isMoveLegal(currentBoard, [r,c], m.to, currentTurn, currentCastling, currentEnPassant));
+          for (const m of pieceMoves) {
+            moves.push({from: [r, c], to: m.to});
+          }
+        }
+      }
+    }
+    if (moves.length === 0) return; // Game over
+    // For now: pick random legal move (could plug in minimax etc. here in future)
+    const choice = moves[Math.floor(Math.random() * moves.length)];
+    aiPlayMove(choice.from, choice.to, currentBoard, currentHistory, currentCastling, currentEnPassant, currentTurn);
+  }
+
+  // Actually execute an AI move (copied logic from playMove with local state)
+  function aiPlayMove(from, to, localBoard, localHistory, localCastling, localEnPassant, localTurn) {
+    let newBoard = deepCopyBoard(localBoard);
+    const piece = localBoard[from[0]][from[1]];
+    let moveText = algebraic(from) + " → " + algebraic(to);
+
+    // Pawn promotion for AI (always to queen)
+    let promotion = false;
+    if (piece.type === 'p' && (to[0] === 0 || to[0] === 7)) {
+      newBoard[to[0]][to[1]] = {type:'q', color:piece.color};
+      newBoard[from[0]][from[1]] = null;
+      promotion = true;
+    }
+    else {
+      const deltaR = to[0] - from[0], deltaC = to[1] - from[1];
+      if (piece.type==='p' && Math.abs(deltaC) === 1 && !localBoard[to[0]][to[1]]) {
+        // En passant
+        newBoard[from[0]][to[1]] = null;
+        newBoard[to[0]][to[1]] = piece;
+        newBoard[from[0]][from[1]] = null;
+        moveText += " e.p.";
+      } else if (piece.type==='k' && Math.abs(deltaC)===2) {
+        // Castling
+        newBoard[to[0]][to[1]] = piece;
+        newBoard[from[0]][from[1]] = null;
+        if (deltaC === 2) { // kingside
+          newBoard[to[0]][5] = newBoard[to[0]][7];
+          newBoard[to[0]][7] = null;
+        } else { // queenside
+          newBoard[to[0]][3] = newBoard[to[0]][0];
+          newBoard[to[0]][0] = null;
+        }
+        moveText += " (O-O" + (deltaC===2?"":"-O") + ")";
+      } else {
+        newBoard[to[0]][to[1]] = piece;
+        newBoard[from[0]][from[1]] = null;
+      }
+    }
+
+    // Update castling rights
+    let newCastling = {...localCastling};
+    if (piece.type==='k') {
+      if (piece.color==='w') { newCastling.wk = false; newCastling.wq = false; }
+      else { newCastling.bk = false; newCastling.bq = false; }
+    }
+    if (piece.type==='r') {
+      if (from[0]===7&&from[1]===0) newCastling.wq = false;
+      if (from[0]===7&&from[1]===7) newCastling.wk = false;
+      if (from[0]===0&&from[1]===0) newCastling.bq = false;
+      if (from[0]===0&&from[1]===7) newCastling.bk = false;
+    }
+
+    // Set en passant target
+    let newEnPassant = null;
+    if (piece.type==='p' && Math.abs(to[0]-from[0])===2) {
+      newEnPassant = [ (from[0]+to[0])/2, from[1] ];
+    }
+
+    // Update all state (now as next move for player)
+    setTimeout(() => {
+      setBoard(newBoard);
+      setMoveHistory([...localHistory, moveText]);
+      setInvalidMove(null);
+      setTurn(localTurn === "w" ? "b" : "w");
+      setCastling(newCastling);
+      setEnPassant(newEnPassant);
+
+      const nextStatus = getGameStatus(newBoard, localTurn === "w" ? "b" : "w", newCastling, newEnPassant);
+      setStatus(nextStatus);
+    }, 460); // Add brief delay for realism
+  }
+
+  // Play a move by the human player (wrapper that triggers AI if opponent's turn after)
+  function playerMove(from, to) {
     let newBoard = deepCopyBoard(board);
     const piece = board[from[0]][from[1]];
     let moveText = algebraic(from) + " → " + algebraic(to);
@@ -311,12 +404,25 @@ function MainContainer() {
     setBoard(newBoard);
     setMoveHistory([...moveHistory, moveText]);
     setInvalidMove(null);
-    setTurn(turn === "w" ? "b" : "w");
+
+    // Next turn
+    const nextTurn = turn === "w" ? "b" : "w";
+    setTurn(nextTurn);
     setCastling(newCastling);
     setEnPassant(newEnPassant);
 
-    const nextStatus = getGameStatus(newBoard, turn === "w" ? "b" : "w", newCastling, newEnPassant);
+    const nextStatus = getGameStatus(newBoard, nextTurn, newCastling, newEnPassant);
     setStatus(nextStatus);
+
+    // After update: If AI's turn and game running, schedule AI move
+    if (nextStatus === "running" || nextStatus === "check") {
+      // AI always plays black
+      if (nextTurn === "b") {
+        setTimeout(() => {
+          aiMove(newBoard, "b", newCastling, newEnPassant, [...moveHistory, moveText]);
+        }, 380);
+      }
+    }
   }
 
   // --- RENDERING ---
