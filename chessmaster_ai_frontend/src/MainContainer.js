@@ -315,70 +315,126 @@ function MainContainer() {
     setAiThinking(true);
 
     // Select an AI move based on difficulty
+    // Enhanced AI: Medium = 1-ply minimax, Hard = 2-ply minimax, Easy = random
     function selectAIMove(difficulty) {
-      const moves = [];
-      for (let r = 0; r < 8; ++r) {
-        for (let c = 0; c < 8; ++c) {
-          if (currentBoard[r][c]?.color === currentTurn) {
-            const pieceMoves = getLegalMoves(currentBoard, [r, c], currentTurn, currentCastling, currentEnPassant)
-              .filter(m => isMoveLegal(currentBoard, [r, c], m.to, currentTurn, currentCastling, currentEnPassant));
-            for (const m of pieceMoves) {
-              moves.push({ from: [r, c], to: m.to });
-            }
+      // Helper: get all legal moves for current color
+      function enumerateMoves(bd, color, castling, enPassantTarget) {
+        const moves = [];
+        for (let r = 0; r < 8; ++r) for (let c = 0; c < 8; ++c) {
+          if (bd[r][c]?.color !== color) continue;
+          const pieceMoves = getLegalMoves(bd, [r, c], color, castling, enPassantTarget)
+            .filter(m => isMoveLegal(bd, [r, c], m.to, color, castling, enPassantTarget));
+          for (const m of pieceMoves) {
+            moves.push({ from: [r, c], to: m.to });
           }
         }
+        return moves;
       }
-      if (moves.length === 0) return null;
+      // Assign piece values (material only)
+      function getPieceValue(type) {
+        switch (type) {
+          case 'q': return 9;
+          case 'r': return 5;
+          case 'b': case 'n': return 3;
+          case 'p': return 1;
+          default: return 0;
+        }
+      }
+      // Material and simple position evaluation
+      function evaluate(bd, color) {
+        // Material sum (positive for color, minus for opponent), also bonus for mobility
+        let meScore = 0, oppScore = 0;
+        for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+          const p = bd[r][c];
+          if (!p) continue;
+          if (p.color === color) meScore += getPieceValue(p.type);
+          else oppScore += getPieceValue(p.type);
+        }
+        return meScore - oppScore;
+      }
 
+      // 1-ply minimax root (used for medium, but prefers captures)
+      function minimax1ply(bd, color, castling, enPassantTarget) {
+        const moves = enumerateMoves(bd, color, castling, enPassantTarget);
+        if (moves.length === 0) return null;
+        let maxScore = -Infinity, bestMoves = [];
+        for (const move of moves) {
+          const testBoard = deepCopyBoard(bd);
+          const movingPiece = testBoard[move.from[0]][move.from[1]];
+          const cap = testBoard[move.to[0]][move.to[1]];
+          testBoard[move.to[0]][move.to[1]] = movingPiece;
+          testBoard[move.from[0]][move.from[1]] = null;
+          // promote if pawn reaches end
+          if (movingPiece.type === 'p' && (move.to[0] === 0 || move.to[0] === 7))
+            testBoard[move.to[0]][move.to[1]] = {type:'q', color:movingPiece.color};
+
+          let score = evaluate(testBoard, color);
+          if (cap) score += getPieceValue(cap.type); // favor captures extra
+          if (score > maxScore) {
+            maxScore = score;
+            bestMoves = [move];
+          } else if (score === maxScore) {
+            bestMoves.push(move);
+          }
+        }
+        return bestMoves.length ? bestMoves[Math.floor(Math.random() * bestMoves.length)] : moves[Math.floor(Math.random() * moves.length)];
+      }
+
+      // 2-ply minimax, only material (for Hard), no alpha-beta for speed, random breaks ties
+      function minimax2ply_root(bd, color, castling, enPassantTarget) {
+        const moves = enumerateMoves(bd, color, castling, enPassantTarget);
+        if (moves.length === 0) return null;
+        let maxScore = -Infinity, bestMoves = [];
+        for (const move of moves) {
+          let testBoard = deepCopyBoard(bd);
+          const movingPiece = testBoard[move.from[0]][move.from[1]];
+          testBoard[move.to[0]][move.to[1]] = movingPiece;
+          testBoard[move.from[0]][move.from[1]] = null;
+          // pawn promo
+          if (movingPiece.type === 'p' && (move.to[0] === 0 || move.to[0] === 7))
+            testBoard[move.to[0]][move.to[1]] = {type:'q', color:movingPiece.color};
+          // Opponent reply (minimizing)
+          const oppColor = color === 'w' ? 'b' : 'w';
+          const oppMoves = enumerateMoves(testBoard, oppColor, castling, enPassantTarget);
+          let worstForMe = Infinity;
+          if (oppMoves.length === 0) {
+            // No opponent move, treat as win (checkmate or stalemate)
+            worstForMe = evaluate(testBoard, color) + 999;
+          } else {
+            for (const oppMove of oppMoves) {
+              let oppBoard = deepCopyBoard(testBoard);
+              const oppPiece = oppBoard[oppMove.from[0]][oppMove.from[1]];
+              oppBoard[oppMove.to[0]][oppMove.to[1]] = oppPiece;
+              oppBoard[oppMove.from[0]][oppMove.from[1]] = null;
+              if (oppPiece.type === 'p' && (oppMove.to[0] === 0 || oppMove.to[0] === 7))
+                oppBoard[oppMove.to[0]][oppMove.to[1]] = {type:'q', color:oppPiece.color};
+              const score = evaluate(oppBoard, color);
+              if (score < worstForMe) worstForMe = score;
+            }
+          }
+          if (worstForMe > maxScore) {
+            maxScore = worstForMe;
+            bestMoves = [move];
+          } else if (worstForMe === maxScore) {
+            bestMoves.push(move);
+          }
+        }
+        return bestMoves.length ? bestMoves[Math.floor(Math.random() * bestMoves.length)] : moves[Math.floor(Math.random() * moves.length)];
+      }
+
+      // --- Main difficulty branches ---
       if (difficulty === "Easy") {
         // Random move
-        return moves[Math.floor(Math.random() * moves.length)];
+        const possible = enumerateMoves(currentBoard, currentTurn, currentCastling, currentEnPassant);
+        if (possible.length === 0) return null;
+        return possible[Math.floor(Math.random() * possible.length)];
       }
       if (difficulty === "Medium") {
-        // Prefer captures; else random
-        const captures = moves.filter(({ to }) => currentBoard[to[0]][to[1]]);
-        if (captures.length > 0) return captures[Math.floor(Math.random() * captures.length)];
-        return moves[Math.floor(Math.random() * moves.length)];
+        // Use 1-ply minimax with material/capture bias (not just greedy capture)
+        return minimax1ply(currentBoard, currentTurn, currentCastling, currentEnPassant);
       }
-      // Hard: Simple shallow minimax-like evaluation (material only, 1 ply)
-      let bestMove = moves[0], bestScore = -Infinity;
-      for (const move of moves) {
-        let testBoard = deepCopyBoard(currentBoard);
-        const piece = testBoard[move.from[0]][move.from[1]];
-        const captured = testBoard[move.to[0]][move.to[1]] ? testBoard[move.to[0]][move.to[1]] : null;
-        testBoard[move.to[0]][move.to[1]] = piece;
-        testBoard[move.from[0]][move.from[1]] = null;
-        let score = materialScore(testBoard, currentTurn) - materialScore(testBoard, currentTurn === 'w' ? 'b' : 'w');
-        // Bonus if this move captures higher value
-        if (captured) {
-          score += getPieceValue(captured.type);
-        }
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = move;
-        }
-      }
-      return bestMove;
-    }
-    // Assign piece values for 'material only' evaluation
-    function getPieceValue(type) {
-      switch (type) {
-        case 'q': return 9;
-        case 'r': return 5;
-        case 'b':
-        case 'n': return 3;
-        case 'p': return 1;
-        default: return 0;
-      }
-    }
-    function materialScore(bd, who) {
-      let score = 0;
-      for (let r = 0; r < 8; ++r)
-        for (let c = 0; c < 8; ++c) {
-          const p = bd[r][c];
-          if (p && p.color === who) score += getPieceValue(p.type);
-        }
-      return score;
+      // Hard: Deeper 2-ply minimax for more strategic moves
+      return minimax2ply_root(currentBoard, currentTurn, currentCastling, currentEnPassant);
     }
 
     const chosenMove = selectAIMove(aiDifficulty);
