@@ -1,26 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 /**
- * MainContainer
- * Primary interface for ChessMaster AI. Features:
- *  - Chessboard area (center)
- *  - Move history panel (right side)
- *  - Themed for light appearance
- *  - Grid-based responsive layout
- *
- * Chess rules & move validation including:
- *  - Legal move logic for all pieces
- *  - Check, checkmate, and stalemate detection
- *  - User can only play legal moves; UI indicates invalid moves
- *  - Game state updates are enforced per chess rules
+ * Display a countdown clock for each player.
+ * Props: time (seconds), active (is ticking), color ('w'/'b'), label (string)
  */
 // PUBLIC_INTERFACE
-function MainContainer() {
-  // ------ CHESS ENGINE LOGIC (minimal, enough for rule validation structure) ------
+function Clock({ time, active, color, label }) {
+  // Format as mm:ss
+  const mins = Math.floor(time / 60).toString().padStart(2, "0");
+  const secs = (time % 60).toString().padStart(2, "0");
+  return (
+    <div
+      style={{
+        ...clockStyles.clockOuter,
+        borderColor: color === "w" ? theme.primary : theme.accent,
+        background:
+          color === "w"
+            ? "linear-gradient(90deg,#fafdff,#e6f3fc)"
+            : "linear-gradient(90deg,#e3e9ff,#c9e0fb)",
+        opacity: active ? 1 : 0.68,
+        boxShadow: active
+          ? "0 0 0 2.5px " +
+            (color === "w" ? theme.primary : theme.accent) +
+            ", 0 3px 18px rgba(33,150,243,0.09)"
+          : "0 2.5px 14px rgba(150,150,180,0.05)",
+        transition: "opacity 0.18s, box-shadow 0.18s"
+      }}
+      aria-label={label}
+    >
+      <span
+        style={{
+          ...clockStyles.clockLabel,
+          color: color === "w" ? theme.primary : theme.accent
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          ...clockStyles.clockDigits,
+          fontWeight: active ? 700 : 500
+        }}
+      >
+        {mins}:{secs}
+      </span>
+      <span
+        style={{
+          ...clockStyles.clockActiveDot,
+          background: active
+            ? color === "w"
+              ? theme.primary
+              : theme.accent
+            : "transparent"
+        }}
+      />
+    </div>
+  );
+}
 
-  // Set up starting chess position as 8x8 array; each cell is { type, color }
+// PUBLIC_INTERFACE
+function MainContainer() {
+  // ------ CHESS ENGINE LOGIC (omitted for brevity, same as previous) ------
   function getInitialBoard() {
-    // Uppercase for white, lowercase for black; type: K/Q/R/B/N/P
     const empty = Array(8).fill(null);
     return [
       [ {type:'r',color:'b'}, {type:'n',color:'b'}, {type:'b',color:'b'}, {type:'q',color:'b'}, {type:'k',color:'b'}, {type:'b',color:'b'}, {type:'n',color:'b'}, {type:'r',color:'b'} ],
@@ -30,28 +71,16 @@ function MainContainer() {
       [ {type:'r',color:'w'}, {type:'n',color:'w'}, {type:'b',color:'w'}, {type:'q',color:'w'}, {type:'k',color:'w'}, {type:'b',color:'w'}, {type:'n',color:'w'}, {type:'r',color:'w'} ]
     ];
   }
-
-  // Returns FEN-like board array, e.g. used for UI and logic
   function deepCopyBoard(board) {
     return board.map(row => row.map(cell => (cell ? {...cell} : null)));
   }
-
-  // Utility to check if two squares are equal
   function squaresEqual(a, b) {
     return a && b && a[0] === b[0] && a[1] === b[1];
   }
-
-  // Chess move/direction helpers
   const pieceSymbols = {
-    w: {
-      k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙"
-    },
-    b: {
-      k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟"
-    }
+    w: { k: "♔", q: "♕", r: "♖", b: "♗", n: "♘", p: "♙" },
+    b: { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" }
   };
-
-  // Returns array of possible moves for a piece at square [row, col]
   function getLegalMoves(board, from, turnColor, castling, enPassantTarget) {
     const res = [];
     const [r, c] = from;
@@ -59,29 +88,19 @@ function MainContainer() {
     if (!piece || piece.color !== turnColor) return [];
     const color = piece.color;
     const opp = color === 'w' ? 'b' : 'w';
-
-    // Generate candidate moves for piece at (r,c)
     function addMove(toR, toC, opts = {}) {
-      // Out of board or capture own color?  
       if (toR < 0 || toR > 7 || toC < 0 || toC > 7) return;
       if (board[toR][toC] && board[toR][toC].color === color) return;
-      // Optionally prevent king moving into check here (UI does check after for perf)
       res.push({from: [r,c], to: [toR, toC], ...opts});
     }
-
     switch (piece.type) {
       case 'p': {
-        // Pawns: forward moves
         let dir = color === 'w' ? -1 : +1;
-        // Forward 1
         if (!board[r+dir]?.[c]) addMove(r+dir, c);
-        // Forward 2 from start
         if (((color==='w'&&r===6)||(color==='b'&&r===1)) && !board[r+dir]?.[c] && !board[r+2*dir]?.[c]) addMove(r+2*dir, c, {isDouble:true});
-        // Captures
         [c-1,c+1].forEach(cc=>{
           if (board[r+dir]?.[cc] && board[r+dir][cc].color===opp) addMove(r+dir, cc);
         });
-        // En passant
         if (enPassantTarget) {
           if (Math.abs(enPassantTarget[1]-c)===1 && enPassantTarget[0]===r+dir)
             addMove(enPassantTarget[0], enPassantTarget[1], {enPassant:true});
@@ -114,9 +133,7 @@ function MainContainer() {
         break;
       case 'k': {
         [ [1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1] ].forEach(([dr,dc])=>addMove(r+dr,c+dc));
-        // Castling
         if (!castling) break;
-        // White: row 7, Black: row 0
         if (color==='w'&&r===7&&c===4){
           if (castling.wk && !board[7][5] && !board[7][6]) addMove(7,6,{castle:'K'});
           if (castling.wq && !board[7][1] && !board[7][2] && !board[7][3]) addMove(7,2,{castle:'Q'});
@@ -132,15 +149,11 @@ function MainContainer() {
     }
     return res;
   }
-
-  // Checks if the given color's king is in check
   function isInCheck(board, color, castling, enPassantTarget) {
-    // Find king square
     let kingSq;
     for (let r=0; r<8; ++r) for(let c=0;c<8;++c)
       if (board[r][c]?.type==='k' && board[r][c].color===color) kingSq=[r,c];
     if (!kingSq) return false;
-    // See if any enemy piece attacks king's square
     const opp = color==='w'?'b':'w';
     for (let r=0;r<8;++r) for(let c=0;c<8;++c)
       if (board[r][c] && board[r][c].color===opp) {
@@ -149,28 +162,23 @@ function MainContainer() {
       }
     return false;
   }
-
-  // Main move validation: Does move represent a legal chess move for current player?
   function isMoveLegal(board, from, to, turnColor, castling, enPassantTarget) {
     if (!from||!to) return false;
     const moves = getLegalMoves(board, from, turnColor, castling, enPassantTarget);
     let foundMove = moves.find(m=>squaresEqual(m.to, to));
     if (!foundMove) return false;
-    // Simulate move, check own king not in check
     const newBoard = deepCopyBoard(board);
-    // En passant (capture)
     if (foundMove.enPassant) {
       newBoard[to[0]][to[1]] = newBoard[from[0]][from[1]];
       newBoard[from[0]][from[1]] = null;
-      newBoard[from[0]+(turnColor==='w'?-1:1)][to[1]] = null; // Remove captured pawn
+      newBoard[from[0]+(turnColor==='w'?-1:1)][to[1]] = null;
     } else if (foundMove.castle) {
       newBoard[to[0]][to[1]] = newBoard[from[0]][from[1]];
       newBoard[from[0]][from[1]] = null;
-      // Move rook as well
-      if (foundMove.castle==='K') { // kingside
+      if (foundMove.castle==='K') {
         newBoard[to[0]][to[1]-1] = newBoard[to[0]][7];
         newBoard[to[0]][7] = null;
-      } else { // queenside
+      } else {
         newBoard[to[0]][to[1]+1] = newBoard[to[0]][0];
         newBoard[to[0]][0] = null;
       }
@@ -180,11 +188,8 @@ function MainContainer() {
     }
     return !isInCheck(newBoard, turnColor, castling, enPassantTarget);
   }
-
-  // Checkmate/stalemate detection
   function getGameStatus(board, turnColor, castling, enPassantTarget) {
     if (isInCheck(board, turnColor, castling, enPassantTarget)) {
-      // If no legal moves, then checkmate
       let hasLegal = false;
       for (let r=0;r<8;++r) for (let c=0;c<8;++c)
         if (board[r][c]?.color===turnColor) {
@@ -195,7 +200,6 @@ function MainContainer() {
       if (!hasLegal) return "checkmate";
       return "check";
     } else {
-      // If no moves and not in check, stalemate
       let hasLegal = false;
       for (let r=0;r<8;++r) for (let c=0;c<8;++c)
         if (board[r][c]?.color===turnColor) {
@@ -207,10 +211,8 @@ function MainContainer() {
       return "running";
     }
   }
-
-  // Track board, move history, turn, castling rights, en passant, selection, status, and invalid move info.
   const [board, setBoard] = useState(getInitialBoard());
-  const [turn, setTurn] = useState('w'); // 'w' for white, 'b' for black
+  const [turn, setTurn] = useState('w');
   const [moveHistory, setMoveHistory] = useState([]);
   const [selected, setSelected] = useState(null); // [row, col] of selected
   const [castling, setCastling] = useState({wk:true, wq:true, bk:true, bq:true});
@@ -218,16 +220,62 @@ function MainContainer() {
   const [status, setStatus] = useState('running'); // running, check, checkmate, stalemate
   const [invalidMove, setInvalidMove] = useState(null);
 
-  // Converts [row,col] to algebraic notation (e.g., 'e2')
+  // --- CHESS CLOCK STATE ---
+  const DEFAULT_TIME = 5 * 60; // 5 minutes for each player
+  const [whiteTime, setWhiteTime] = useState(DEFAULT_TIME);
+  const [blackTime, setBlackTime] = useState(DEFAULT_TIME);
+  const clockIntervalRef = useRef(null);
+
+  // Resume/pause logic for timers: run only if (status is running or check) and it's their turn
+  useEffect(() => {
+    if (!(status === "running" || status === "check")) {
+      if (clockIntervalRef.current) {
+        clearInterval(clockIntervalRef.current);
+        clockIntervalRef.current = null;
+      }
+      return;
+    }
+    if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
+
+    clockIntervalRef.current = setInterval(() => {
+      if (turn === "w") {
+        setWhiteTime((t) => (t > 0 ? t - 1 : 0));
+      } else {
+        setBlackTime((t) => (t > 0 ? t - 1 : 0));
+      }
+    }, 1000);
+
+    return () => {
+      if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
+    };
+    // Only run when turn or status changes
+  }, [turn, status]);
+
+  // Stop timers at time out (when clock hits 0)
+  useEffect(() => {
+    if (whiteTime === 0 && (status === "running" || status === "check")) {
+      setStatus("checkmate");
+      if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
+    }
+    if (blackTime === 0 && (status === "running" || status === "check")) {
+      setStatus("checkmate");
+      if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
+    }
+  }, [whiteTime, blackTime, status]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
+    };
+  }, []);
+
   function algebraic([r,c]) {
     return String.fromCharCode(97 + c) + (8-r);
   }
-
-  // Handle click on square: select or move
   function onCellClick(r, c) {
-    if (status !== "running" && status !== "check") return; // Don't allow moves if game over
+    if (status !== "running" && status !== "check") return;
     if (!selected) {
-      // Select only own color
       if (board[r][c] && board[r][c].color === turn) {
         setSelected([r, c]);
         setInvalidMove(null);
@@ -236,7 +284,6 @@ function MainContainer() {
       if (r === selected[0] && c === selected[1]) {
         setSelected(null);
       } else {
-        // Try make move
         if (isMoveLegal(board, selected, [r, c], turn, castling, enPassant)) {
           playerMove(selected, [r, c]);
           setSelected(null);
@@ -249,7 +296,6 @@ function MainContainer() {
 
   // AI move logic: select and play a random legal move for the given color (AI plays black)
   function aiMove(currentBoard, currentTurn, currentCastling, currentEnPassant, currentHistory) {
-    // Find all legal moves for AI color
     const moves = [];
     for (let r = 0; r < 8; ++r) {
       for (let c = 0; c < 8; ++c) {
@@ -262,19 +308,16 @@ function MainContainer() {
         }
       }
     }
-    if (moves.length === 0) return; // Game over
-    // For now: pick random legal move (could plug in minimax etc. here in future)
+    if (moves.length === 0) return;
     const choice = moves[Math.floor(Math.random() * moves.length)];
     aiPlayMove(choice.from, choice.to, currentBoard, currentHistory, currentCastling, currentEnPassant, currentTurn);
   }
 
-  // Actually execute an AI move (copied logic from playMove with local state)
   function aiPlayMove(from, to, localBoard, localHistory, localCastling, localEnPassant, localTurn) {
     let newBoard = deepCopyBoard(localBoard);
     const piece = localBoard[from[0]][from[1]];
     let moveText = algebraic(from) + " → " + algebraic(to);
 
-    // Pawn promotion for AI (always to queen)
     let promotion = false;
     if (piece.type === 'p' && (to[0] === 0 || to[0] === 7)) {
       newBoard[to[0]][to[1]] = {type:'q', color:piece.color};
@@ -284,19 +327,17 @@ function MainContainer() {
     else {
       const deltaR = to[0] - from[0], deltaC = to[1] - from[1];
       if (piece.type==='p' && Math.abs(deltaC) === 1 && !localBoard[to[0]][to[1]]) {
-        // En passant
         newBoard[from[0]][to[1]] = null;
         newBoard[to[0]][to[1]] = piece;
         newBoard[from[0]][from[1]] = null;
         moveText += " e.p.";
       } else if (piece.type==='k' && Math.abs(deltaC)===2) {
-        // Castling
         newBoard[to[0]][to[1]] = piece;
         newBoard[from[0]][from[1]] = null;
-        if (deltaC === 2) { // kingside
+        if (deltaC === 2) {
           newBoard[to[0]][5] = newBoard[to[0]][7];
           newBoard[to[0]][7] = null;
-        } else { // queenside
+        } else {
           newBoard[to[0]][3] = newBoard[to[0]][0];
           newBoard[to[0]][0] = null;
         }
@@ -307,7 +348,6 @@ function MainContainer() {
       }
     }
 
-    // Update castling rights
     let newCastling = {...localCastling};
     if (piece.type==='k') {
       if (piece.color==='w') { newCastling.wk = false; newCastling.wq = false; }
@@ -320,13 +360,11 @@ function MainContainer() {
       if (from[0]===0&&from[1]===7) newCastling.bk = false;
     }
 
-    // Set en passant target
     let newEnPassant = null;
     if (piece.type==='p' && Math.abs(to[0]-from[0])===2) {
       newEnPassant = [ (from[0]+to[0])/2, from[1] ];
     }
 
-    // Update all state (now as next move for player)
     setTimeout(() => {
       setBoard(newBoard);
       setMoveHistory([...localHistory, moveText]);
@@ -337,40 +375,34 @@ function MainContainer() {
 
       const nextStatus = getGameStatus(newBoard, localTurn === "w" ? "b" : "w", newCastling, newEnPassant);
       setStatus(nextStatus);
-    }, 460); // Add brief delay for realism
+    }, 460);
   }
 
-  // Play a move by the human player (wrapper that triggers AI if opponent's turn after)
   function playerMove(from, to) {
     let newBoard = deepCopyBoard(board);
     const piece = board[from[0]][from[1]];
     let moveText = algebraic(from) + " → " + algebraic(to);
 
-    // Pawn promotion, ending just as queen for simplicity
     let promotion = false;
     if (piece.type === 'p' && (to[0] === 0 || to[0] === 7)) {
       newBoard[to[0]][to[1]] = {type:'q', color:piece.color};
       newBoard[from[0]][from[1]] = null;
       promotion = true;
     }
-    // Regular move, also handle en passant and castling
     else {
-      // Check if move is en passant (target square empty, pawn moved diagonally)
       const deltaR = to[0] - from[0], deltaC = to[1] - from[1];
       if (piece.type==='p' && Math.abs(deltaC) === 1 && !board[to[0]][to[1]]) {
-        // Remove pawn behind
         newBoard[from[0]][to[1]] = null;
         newBoard[to[0]][to[1]] = piece;
         newBoard[from[0]][from[1]] = null;
         moveText += " e.p.";
       } else if (piece.type==='k' && Math.abs(deltaC)===2) {
-        // Castling
         newBoard[to[0]][to[1]] = piece;
         newBoard[from[0]][from[1]] = null;
-        if (deltaC === 2) { // kingside
+        if (deltaC === 2) {
           newBoard[to[0]][5] = newBoard[to[0]][7];
           newBoard[to[0]][7] = null;
-        } else { // queenside
+        } else {
           newBoard[to[0]][3] = newBoard[to[0]][0];
           newBoard[to[0]][0] = null;
         }
@@ -381,7 +413,6 @@ function MainContainer() {
       }
     }
 
-    // Update castling rights
     let newCastling = {...castling};
     if (piece.type==='k') {
       if (piece.color==='w') { newCastling.wk = false; newCastling.wq = false; }
@@ -394,18 +425,14 @@ function MainContainer() {
       if (from[0]===0&&from[1]===7) newCastling.bk = false;
     }
 
-    // Set en passant target
     let newEnPassant = null;
     if (piece.type==='p' && Math.abs(to[0]-from[0])===2) {
       newEnPassant = [ (from[0]+to[0])/2, from[1] ];
     }
-
-    // Update all state
     setBoard(newBoard);
     setMoveHistory([...moveHistory, moveText]);
     setInvalidMove(null);
 
-    // Next turn
     const nextTurn = turn === "w" ? "b" : "w";
     setTurn(nextTurn);
     setCastling(newCastling);
@@ -414,9 +441,7 @@ function MainContainer() {
     const nextStatus = getGameStatus(newBoard, nextTurn, newCastling, newEnPassant);
     setStatus(nextStatus);
 
-    // After update: If AI's turn and game running, schedule AI move
     if (nextStatus === "running" || nextStatus === "check") {
-      // AI always plays black
       if (nextTurn === "b") {
         setTimeout(() => {
           aiMove(newBoard, "b", newCastling, newEnPassant, [...moveHistory, moveText]);
@@ -435,13 +460,30 @@ function MainContainer() {
       </header>
 
       <div style={styles.gridContainer}>
-        {/* Center Chessboard */}
+        {/* Center Chessboard and clocks */}
         <section style={styles.chessboardSection}>
+
+          {/* --- Clocks UI --- */}
+          <div style={clockStyles.clockBar}>
+            <Clock
+              time={whiteTime}
+              active={turn === "w" && (status === "running" || status === "check")}
+              color="w"
+              label="Player"
+            />
+            <span style={clockStyles.vsDivider}>vs</span>
+            <Clock
+              time={blackTime}
+              active={turn === "b" && (status === "running" || status === "check")}
+              color="b"
+              label="AI"
+            />
+          </div>
+
           <div style={styles.chessboard}>
             {board.map((row, i) => (
               <div style={styles.row} key={i}>
                 {row.map((cell, j) => {
-                  // Highlight selected square or invalid move
                   let cellStyle = {
                     ...styles.cell,
                     background:
@@ -472,7 +514,15 @@ function MainContainer() {
           </div>
           <div style={styles.boardLabel}>
             {status === "checkmate"
-              ? `Checkmate! ${turn === "w" ? "Black" : "White"} wins`
+              ? `${
+                  turn === "w"
+                    ? blackTime === 0
+                      ? "Out of time! White loses"
+                      : "Checkmate! Black wins"
+                    : whiteTime === 0
+                    ? "Out of time! Black loses"
+                    : "Checkmate! White wins"
+                }`
               : status === "stalemate"
               ? "Stalemate: Draw"
               : status === "check"
@@ -509,6 +559,60 @@ const theme = {
   boardDark: "#b8d2e6",
   text: "#222",
   border: "#e0e0e0"
+};
+
+// --- CLOCK STYLES ---
+const clockStyles = {
+  clockBar: {
+    width: "365px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 18,
+    marginTop: 8,
+    gap: 17
+  },
+  clockOuter: {
+    border: "2.5px solid",
+    borderRadius: "32px",
+    padding: "6px 18px 7px 18px",
+    minWidth: "114px",
+    fontFamily: "'JetBrains Mono', 'Menlo', 'Consolas', monospace",
+    fontWeight: 600,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    fontSize: "1.62rem",
+    background: "#f9fdff",
+    position: "relative"
+  },
+  clockLabel: {
+    fontSize: "0.97rem",
+    marginBottom: -3,
+    marginTop: 0,
+    fontWeight: 500,
+    opacity: 0.92
+  },
+  clockDigits: {
+    fontSize: "2.01rem",
+    fontVariantNumeric: "tabular-nums",
+    letterSpacing: "0.12em"
+  },
+  clockActiveDot: {
+    width: 16,
+    height: 4,
+    borderRadius: 6,
+    marginTop: 3,
+    marginBottom: -3,
+    alignSelf: "center",
+    transition: "background 0.17s"
+  },
+  vsDivider: {
+    fontWeight: 700,
+    fontSize: "1.22rem",
+    color: "#ACB4C5",
+    margin: "0 6px"
+  }
 };
 
 // --- STYLES ---
