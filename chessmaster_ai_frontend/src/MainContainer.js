@@ -800,30 +800,38 @@ function MainContainer() {
     return () => clearTimeout(timeout);
   }, [activeCell]);
 
-  // Board rendering
+  // Board rendering (rustic desktop only)
   return (
-    <div 
+    <div
       className={darkMode ? "dark" : ""}
       style={{
-        ...styles.wrapper, 
-        background: 'var(--base-dark)', 
+        ...styles.wrapper,
+        background: 'var(--base-dark)',
         color: 'var(--text-color)'
       }}
     >
-      {/* Main glass-like App Card */}
-      <div className={`main-glass-app-card${darkMode ? " dark" : ""}`} style={{background: 'var(--glass-grad)', color: 'var(--text-color)'}}>
-        {/* Title/Header area with glass + backdrop */}
-        <header className="modern-glass-blur glass-card header-glass" style={styles.headerEnhanced}>
-          <div style={{display: "flex", alignItems: "center", width: '100%'}}>
+      {/* Main Container */}
+      <div className="main-glass-app-card">
+        {/* Rustic header */}
+        <header className="header-glass" style={styles.headerEnhanced}>
+          <div style={{ display: "flex", alignItems: "center", width: '100%' }}>
             {/* DARK MODE TOGGLE CONTROL */}
-            <div style={{marginRight: 23, marginLeft: 2, alignSelf: 'flex-start'}}>
+            <div style={{ marginRight: 22, marginLeft: 3, alignSelf: 'flex-start' }}>
               <label
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 7,
-                  fontWeight: 700, color: 'var(--brand-text)', fontSize: '1.08rem',
-                  cursor: 'pointer', padding: '3px 6px', borderRadius: 14,
-                  background: 'var(--glass-panel)', boxShadow: '0 2px 14px #84bdfa15',
-                  border: '1.1px solid var(--border-color)', userSelect: 'none'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 7,
+                  fontWeight: 700,
+                  color: 'var(--brand-text)',
+                  fontSize: '1.08rem',
+                  cursor: 'pointer',
+                  padding: '3px 8px',
+                  borderRadius: 16,
+                  background: '#f7e1bb',
+                  border: '2px solid var(--rustic-border-dark)',
+                  boxShadow: '0 2px 6px #dbb77c44',
+                  userSelect: 'none'
                 }}
                 tabIndex={0}
                 aria-label="Toggle dark mode"
@@ -832,34 +840,47 @@ function MainContainer() {
                   type="checkbox"
                   checked={darkMode}
                   onChange={() => setDarkMode(v => !v)}
-                  style={{ accentColor: '#29a6ff', margin: 0, width: 24, height: 24 }}
+                  style={{ accentColor: '#ddb36b', margin: 0, width: 24, height: 24 }}
                   aria-checked={darkMode}
                 />
-                <span style={{fontSize:'1.12em'}} aria-hidden="true">
+                <span style={{ fontSize: '1.12em' }} aria-hidden="true">
                   {darkMode
                     ? <span role="img">🌙</span>
                     : <span role="img">☀️</span>
                   }
                 </span>
-                <span style={{fontSize:'0.93em'}}>
+                <span style={{ fontSize: '0.93em' }}>
                   {darkMode ? "Dark" : "Light"}
                 </span>
               </label>
             </div>
             <span style={styles.headerBrandArea}>
               <span style={styles.brandLogoCircle}>
-                <span role="img" aria-label="Chess logo" style={styles.logoSymbolBig}>♟️</span>
+                <span role="img" aria-label="Chess logo" style={{
+                  ...styles.logoSymbolBig,
+                  color: '#a9763a',
+                  filter: "drop-shadow(0 1px 6px #d8bb9544)"
+                }}>♟️</span>
               </span>
               <span style={styles.brandTextGroup}>
-                <span style={styles.brandTitle}>ChessMaster<span style={styles.brandAIBadge}>AI</span></span>
-                <span style={styles.brandSubtitle}>Modern Chess AI Duel</span>
+                <span style={{
+                  ...styles.brandTitle,
+                  color: 'var(--brand-text)',
+                  textShadow: "0 1px 9px #ddb36b42"
+                }}>
+                  ChessMaster
+                  <span style={styles.brandAIBadge}>AI</span>
+                </span>
+                <span style={{
+                  ...styles.brandSubtitle,
+                  color: "#a98953"
+                }}>Rustic Chess AI Duel</span>
               </span>
             </span>
           </div>
         </header>
-
-        {/* AI Difficulty selection at the top */}
-        <div className="modern-glass-blur glass-card diffbar-glass" style={styles.difficultyBar}>
+        {/* AI Difficulty Bar */}
+        <div className="diffbar-glass" style={styles.difficultyBar}>
           <span style={styles.difficultyLabel}>AI Difficulty:&nbsp;</span>
           <select
             value={aiDifficulty}
@@ -877,27 +898,18 @@ function MainContainer() {
             </span>
           )}
         </div>
-
-        {/* Responsive Grid */}
-        <div className="mc-gridcontainer glasspanel-layout" style={styles.gridContainer}>
-          {/* Chessboard + clocks in a floating card */}
-          <section className="modern-glass-blur glass-card chessboard-glass-card" style={styles.chessboardSection}>
-            {/* Clocks */}
-            <div className="chessclock-bar-glass" style={clockStyles.clockBarAvatars}>
+        {/* Desktop grid container */}
+        <div className="mc-gridcontainer" style={styles.gridContainer}>
+          {/* Chessboard + clocks */}
+          <section className="chessboard-glass-card" style={styles.chessboardSection}>
+            <div style={clockStyles.clockBarAvatars}>
               <div style={clockStyles.clockWithAvatar}>
-                <div style={clockStyles.avatarCircleUser}>
-                  {/* user avatar: glassy minimal SVG (white) */}
+                <div className="chessclock-avatar-circle" style={clockStyles.avatarCircleUser}>
+                  {/* Rustic user avatar */}
                   <svg width="38" height="38" viewBox="0 0 40 40">
-                    <defs>
-                      <radialGradient id="user-ava-glass" cx="65%" cy="24%" r="74%">
-                        <stop offset="0.11" stopColor="#fff" stopOpacity="0.83"/>
-                        <stop offset="0.48" stopColor="#e7fbfc" stopOpacity="0.38"/>
-                        <stop offset="1" stopColor="#eaf7ff" stopOpacity="0.14"/>
-                      </radialGradient>
-                    </defs>
-                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="url(#user-ava-glass)" opacity="0.91"/>
-                    <ellipse cx="20" cy="16" rx="7.3" ry="7.0" fill="#fafdff" stroke="#b5e7ff" strokeWidth="1.7"/>
-                    <ellipse cx="20" cy="27" rx="9.2" ry="5.1" fill="#e8f5ff"/>
+                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="#f3e2c1" opacity="0.95" />
+                    <ellipse cx="20" cy="16" rx="7.3" ry="7.0" fill="#edd6b5" stroke="#b69467" strokeWidth="1.7" />
+                    <ellipse cx="20" cy="27" rx="9.2" ry="5.1" fill="#edcb91" />
                   </svg>
                 </div>
                 <Clock
@@ -909,24 +921,17 @@ function MainContainer() {
               </div>
               <span style={clockStyles.vsDivider}>vs</span>
               <div style={clockStyles.clockWithAvatar}>
-                <div style={clockStyles.avatarCircleAI}>
-                  {/* AI avatar: glassy minimal SVG (blue) */}
+                <div className="chessclock-avatar-circle chessclock-avatar-ai" style={clockStyles.avatarCircleAI}>
+                  {/* Rustic AI avatar */}
                   <svg width="38" height="38" viewBox="0 0 40 40">
-                    <defs>
-                      <radialGradient id="ai-ava-glass" cx="40%" cy="30%" r="76%">
-                        <stop offset="0.1" stopColor="#73a5ff" stopOpacity="0.36"/>
-                        <stop offset="0.5" stopColor="#def7ff" stopOpacity="0.23"/>
-                        <stop offset="1" stopColor="#558cd8" stopOpacity="0.15"/>
-                      </radialGradient>
-                    </defs>
-                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="url(#ai-ava-glass)" opacity="0.93"/>
-                    <ellipse cx="20" cy="16" rx="7.3" ry="7.0" fill="#d1f4fe" stroke="#5cd5fb" strokeWidth="1.5"/>
-                    <ellipse cx="20" cy="27" rx="9.2" ry="5.1" fill="#a8bcfe"/>
-                    {/* robot face minimalist */}
-                    <ellipse cx="20" cy="16" rx="3.6" ry="3.1" fill="#4fbefd" />
-                    <ellipse cx="17.9" cy="16.2" rx="0.66" ry="0.63" fill="#fff"/>
-                    <ellipse cx="22.1" cy="16.2" rx="0.66" ry="0.63" fill="#fff"/>
-                    <rect x="17" y="19" width="6" height="2" rx="1.1" fill="#88e3fd"/>
+                    <ellipse cx="20" cy="20" rx="15" ry="15" fill="#d6bc95" opacity="0.95" />
+                    <ellipse cx="20" cy="16" rx="7.3" ry="7.0" fill="#a68a65" stroke="#7b5530" strokeWidth="1.5" />
+                    <ellipse cx="20" cy="27" rx="9.2" ry="5.1" fill="#ba8a54" />
+                    {/* simple robot face */}
+                    <ellipse cx="20" cy="16" rx="3.6" ry="3.1" fill="#ab8246" />
+                    <ellipse cx="17.9" cy="16.2" rx="0.66" ry="0.63" fill="#ffe8bb"/>
+                    <ellipse cx="22.1" cy="16.2" rx="0.66" ry="0.63" fill="#ffe8bb"/>
+                    <rect x="17" y="19" width="6" height="2" rx="1.1" fill="#bf9d70"/>
                   </svg>
                 </div>
                 <Clock
@@ -938,79 +943,23 @@ function MainContainer() {
               </div>
             </div>
             {/* Chessboard */}
-            <div className="chessboard-modern modern-glass-blur" style={styles.chessboardModern}>
+            <div className="chessboard-modern" style={styles.chessboardModern}>
               {board.map((row, i) => (
                 <div style={styles.row} key={i}>
                   {row.map((cell, j) => {
                     const isLight = (i + j) % 2 === 0;
-                    let cellGradient = isLight
-                      ? "linear-gradient(120deg, rgba(255,255,255,0.77) 60%, rgba(218,244,252,0.63) 100%)"
-                      : "linear-gradient(140deg, rgba(20,38,78,0.37) 55%, rgba(0,82,143,0.31) 100%)";
-                    let cellBorder = isLight
-                      ? "1.2px solid rgba(250,250,250,0.29)"
-                      : "1.2px solid rgba(20,40,69,0.09)";
-                    let cellShadow =
-                      isLight
-                        ? "0 2px 9px rgba(66,183,255,0.04), 0 1px 2px rgba(97,165,255,0.07)"
-                        : "0 2px 9px rgba(18,22,35,0.17), 0 1px 2px rgba(17,36,54,0.05)";
-
+                    // Rustic: use classNames for cell backgrounds
+                    let cellClass =
+                      "cell-modern " +
+                      (isLight ? "rustic-cell-light" : "rustic-cell-dark");
+                    if (selected && i === selected[0] && j === selected[1]) cellClass += " selected-cell";
                     const cellKey = `${i},${j}`;
-                    const isLegalMove = legalMovesHighlight.includes(cellKey);
+                    if (legalMovesHighlight.includes(cellKey)) cellClass += " legal-move-cell";
+                    if (invalidMove && invalidMove[1][0] === i && invalidMove[1][1] === j) cellClass += " invalid-move-cell";
 
-                    // The base style first
-                    let cellStyle = {
-                      ...styles.cellModern,
-                      background: cellGradient,
-                      boxShadow: cellShadow,
-                      border: cellBorder,
-                      position: "relative",
-                      cursor: cell && cell.color === turn && (status === "running" || status === "check")
-                        ? "pointer"
-                        : "default",
-                      transition: "background .18s, box-shadow .21s, border .13s, transform .14s cubic-bezier(.51,.4,.29,1.31)",
-                      outline: "none"
-                    };
-
-                    // Legal move highlight glassy animation ring
-                    if (isLegalMove) {
-                      cellStyle.boxShadow = (cellStyle.boxShadow ? cellStyle.boxShadow + ', ' : '') + "0 0 0 3.5px #24f0f48c, 0 0 22px #5fd6ff3c";
-                      cellStyle.background = isLight
-                        ? "linear-gradient(109deg,rgba(241,249,255,0.87) 60%, #a7fdff33 100%)"
-                        : "linear-gradient(131deg,rgba(55,150,255,0.18) 60%, #a7fdff33 100%)";
-                      cellStyle.zIndex = 3;
-                      cellStyle.animation = "legalMovePulse 0.56s cubic-bezier(.57,.12,.45,1.13) infinite alternate";
-                    }
-
-                    // Show selected cell
-                    if (selected && i === selected[0] && j === selected[1]) {
-                      cellStyle.background = "linear-gradient(120deg,#ffe7c7a9 60%, #ffd180 100%)";
-                      cellStyle.boxShadow = "0 0 0 7px #ffd1807a, 0 2px 36px #ffebbe41";
-                      cellStyle.zIndex = 4;
-                      cellStyle.transform = "scale(1.067)";
-                    }
-                    // Show active ripple (click/click-feedback)
-                    const cellIsActive = activeCell && activeCell[0] === i && activeCell[1] === j;
-                    if (cellIsActive) {
-                      cellStyle.boxShadow = (cellStyle.boxShadow ? cellStyle.boxShadow + ', ' : '') + "0 0 0 14px #76e1ff33";
-                      cellStyle.transform = "scale(0.97)";
-                    }
-                    // Animated hover effect
-                    const cellIsHover = hoverCell && hoverCell[0] === i && hoverCell[1] === j;
-                    if (cellIsHover && !cellIsActive) {
-                      cellStyle.filter = "brightness(1.10) blur(0.3px)";
-                      cellStyle.boxShadow = (cellStyle.boxShadow ? cellStyle.boxShadow + ', ' : '') + "0 0 12px #8fffec56";
-                    }
-                    // Invalid move (error feedback)
-                    if (invalidMove && invalidMove[1][0] === i && invalidMove[1][1] === j) {
-                      cellStyle.background = "linear-gradient(128deg,#ffd7d7 58%, #ffbdbd 100%)";
-                      cellStyle.boxShadow = "0 0 0 9px rgba(255,50,60,0.20)";
-                      cellStyle.animation = "shake .27s cubic-bezier(.41, .01, .59, .97)";
-                      cellStyle.zIndex = 8;
-                    }
-
-                    // LEGAL MOVE DOT (center)
+                    // LEGAL MOVE DOT - rustic color
                     let legalDot = null;
-                    if (isLegalMove) {
+                    if (legalMovesHighlight.includes(cellKey)) {
                       legalDot = (
                         <span
                           className="cell-legal-dot"
@@ -1021,23 +970,31 @@ function MainContainer() {
                             width: 12,
                             height: 12,
                             borderRadius: "50%",
-                            background: "linear-gradient(120deg,#3ef6f8 60%,#1b6ce2 100%)",
-                            opacity: cell ? 0.36 : 0.66,
-                            boxShadow: "0 2px 8px #94fff955, 0 1.2px 7px #68e0ff2d",
-                            transform: "translate(-50%,-50%) scale(1.14)",
+                            background: "radial-gradient(circle,#dcca78 65%,#b89336 100%)",
+                            opacity: cell ? 0.33 : 0.68,
+                            boxShadow: "0 2px 10px #c8b67a88,0 1.5px 7px #9b8a4626",
+                            transform: "translate(-50%,-50%) scale(1.17)",
                             pointerEvents: "none",
-                            transition: "opacity .17s"
+                            transition: "opacity .15s"
                           }}
                         />
                       );
                     }
 
-                    // Render piece
-                    const highlightPiece = selected && i === selected[0] && j === selected[1];
+                    // Highlighted/active/hover: fallback/handled by CSS in rustic mode
+                    const highlightPiece = selected &&
+                      i === selected[0] &&
+                      j === selected[1];
                     return (
                       <div
                         key={j}
-                        style={cellStyle}
+                        className={cellClass}
+                        style={{
+                          ...styles.cellModern,
+                          cursor: cell && cell.color === turn && (status === "running" || status === "check")
+                            ? "pointer"
+                            : "default"
+                        }}
                         onClick={() => {
                           setActiveCell([i, j]);
                           onCellClick(i, j);
@@ -1046,7 +1003,6 @@ function MainContainer() {
                         onMouseLeave={() => setHoverCell(null)}
                         tabIndex={0}
                         aria-label={`${cell ? (cell.color === "w" ? "White " : "Black ") + cell.type.toUpperCase() : "Empty"} square ${String.fromCharCode(65 + j)}${8 - i}`}
-                        className="cell-modern"
                       >
                         {/* Legal move highlight dot */}
                         {legalDot}
@@ -1057,8 +1013,7 @@ function MainContainer() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            userSelect: "none",
-                            transition: "transform .15s cubic-bezier(.51,.4,.29,1.31)"
+                            userSelect: "none"
                           }}
                         >
                           {cell ? <ChessPieceSVG type={cell.type} color={cell.color} highlight={highlightPiece} /> : ""}
@@ -1069,40 +1024,39 @@ function MainContainer() {
                 </div>
               ))}
             </div>
-            {/* Board label/status as a glass under-banner */}
-            <div className="glass-card glass-status-glass" style={styles.boardLabel}>
+            {/* Board label/status as a rustic status card */}
+            <div className="glass-status-glass" style={styles.boardLabel}>
               {status === "checkmate"
                 ? `${
-                    turn === "w"
-                      ? blackTime === 0
-                        ? "Out of time! White loses"
-                        : "Checkmate! Black wins"
-                      : whiteTime === 0
+                  turn === "w"
+                    ? blackTime === 0
+                      ? "Out of time! White loses"
+                      : "Checkmate! Black wins"
+                    : whiteTime === 0
                       ? "Out of time! Black loses"
                       : "Checkmate! White wins"
-                  }`
+                }`
                 : status === "stalemate"
-                ? "Stalemate: Draw"
-                : status === "check"
-                ? `${turn === "w" ? "White" : "Black"} in check`
-                : (turn === "w" ? "White" : "Black") + "'s Move"}
+                  ? "Stalemate: Draw"
+                  : status === "check"
+                    ? `${turn === "w" ? "White" : "Black"} in check`
+                    : (turn === "w" ? "White" : "Black") + "'s Move"}
               {invalidMove && (
-                <><br /><span style={{ color: "crimson", fontWeight: 500, fontSize:"1.07rem" }}>Illegal move</span></>
+                <><br /><span style={{ color: "#8b2525", fontWeight: 500, fontSize: "1.07rem" }}>Illegal move</span></>
               )}
             </div>
           </section>
-
-          {/* Move History: Enhanced glassy card, scrollable, modern */}
-          <aside className="modern-glass-blur glass-card history-glass-card move-history-scroll-panel" style={styles.moveHistorySection}>
+          {/* Move History: Rustic scroll panel */}
+          <aside className="history-glass-card move-history-scroll-panel" style={styles.moveHistorySection}>
             <h3 style={styles.historyTitle}>Move History</h3>
             <ol style={styles.moveList}>
               {moveHistory.length === 0 ? (
                 <li style={{
                   ...styles.moveItem,
-                  color: "#a5b3c8",
+                  color: "#99783f",
                   fontStyle: "italic",
-                  paddingTop: 16,
-                  opacity: 0.75,
+                  paddingTop: 14,
+                  opacity: 0.78,
                   textAlign: "center"
                 }}>
                   No moves yet. Start playing!
@@ -1114,26 +1068,24 @@ function MainContainer() {
                     style={{
                       ...styles.moveItem,
                       background: idx % 2 === 0
-                        ? "linear-gradient(90deg,rgba(236,248,255,0.63) 52%,rgba(223,240,255,0.0) 100%)"
-                        : "linear-gradient(93deg,rgba(210,239,255,0.19) 44%,rgba(237,247,255,0.12) 100%)",
-                      borderRadius: "7px",
-                      boxShadow: idx === moveHistory.length - 1
-                        ? "0 0 0 2.5px #7cc9fa44"
-                        : "none",
+                        ? "var(--move-list-bg-odd)"
+                        : "var(--move-list-bg-even)",
+                      borderRadius: "6.5px",
                       fontWeight: idx === moveHistory.length - 1 ? 700 : 500,
-                      color: idx === moveHistory.length - 1 ? "#2584c3" : styles.moveItem.color,
-                      marginBottom: 6,
-                      padding: "6.5px 12px 6.5px 6px",
-                      transition: "box-shadow 0.16s, background 0.20s, color 0.18s"
+                      color: idx === moveHistory.length - 1 ? "#a86c22" : styles.moveItem.color,
+                      marginBottom: 7,
+                      padding: "6.5px 12px 6.5px 7px",
+                      transition: "box-shadow 0.13s, background 0.13s, color 0.11s",
+                      borderLeft: "5px solid var(--rustic-border-dark)"
                     }}
                   >
                     <span style={{
                       fontWeight: 400,
                       fontSize: "0.99em",
-                      color: "#89aadd",
+                      color: "#bfa26e",
                       marginRight: 7,
                       verticalAlign: "middle",
-                      opacity: 0.85,
+                      opacity: 0.86,
                       userSelect: "none"
                     }}>
                       {idx + 1}.
