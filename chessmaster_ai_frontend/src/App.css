@@ -218,25 +218,83 @@ body {
 }
 
 /* Utility: hide scrollbars for glass panels except on hover/focus for move history */
-.history-glass-card {
+/* --- Move history glassy scroll panel: upgrade for glassmorphism, smooth scroll, modern look --- */
+.history-glass-card,
+.move-history-scroll-panel {
   scrollbar-width: thin;
-  scrollbar-color: #badaff #e7f6ff;
+  scrollbar-color: #badaff #f1f8ff;
   overflow-y: auto;
-  transition: box-shadow 0.12s;
+  transition: box-shadow 0.16s, border 0.14s;
+  position: relative;
+  background-clip: padding-box;
+  outline: none;
+  border: 2.2px solid rgba(77,178,255,0.13);
+  box-shadow:
+    0 2.5px 16px 2.5px #d2ecff33,
+    0 8px 24px #bcdbff1e;
+  /* Subtle divider on left for glassy edge */
+  border-left: 7px solid rgba(91,200,255,0.11);
+  will-change: box-shadow, background, border-color;
+  /* Impart a gentle fade to bottom */
+  mask-image: linear-gradient(to bottom, black 93%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 93%, transparent 100%);
+  scroll-behavior: smooth;
 }
-.history-glass-card:hover, .history-glass-card:focus-within {
-  box-shadow: 0 2px 22px #a8e0ff44, 0 9px 26px #5368ff0a;
+.history-glass-card:hover,
+.move-history-scroll-panel:hover,
+.history-glass-card:focus-within,
+.move-history-scroll-panel:focus-within {
+  box-shadow:
+    0 4px 34px #b1eeff67,
+    0 9px 32px #61d3ff18,
+    0 0 0 2.5px #83beff28;
+  border-color: #7bb8ff38;
+  border-left: 7px solid #bae6ff49;
 }
-.history-glass-card::-webkit-scrollbar {
+
+.history-glass-card::-webkit-scrollbar,
+.move-history-scroll-panel::-webkit-scrollbar {
   width: 8px;
   background: transparent;
 }
-.history-glass-card::-webkit-scrollbar-thumb {
-  background: #bbeaff77;
-  border-radius: 6px;
+.history-glass-card::-webkit-scrollbar-thumb,
+.move-history-scroll-panel::-webkit-scrollbar-thumb {
+  background: #bbeaff9c;
+  border-radius: 7px;
+  min-height: 32px;
+  transition: background 0.18s;
 }
-.history-glass-card::-webkit-scrollbar-corner {
+.history-glass-card::-webkit-scrollbar-thumb:hover,
+.move-history-scroll-panel::-webkit-scrollbar-thumb:hover {
+  background: #6dc1fdcc;
+}
+.history-glass-card::-webkit-scrollbar-corner,
+.move-history-scroll-panel::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* Extra: Animate fade-in of new moves (optional, for smoothness) */
+@keyframes move-fadein {
+  from { opacity: 0.2; transform: translateY(13px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.move-history-scroll-panel li:last-child {
+  animation: move-fadein .7s cubic-bezier(.19,.5,.31,1.13);
+}
+
+/* Add subtle divider/line at the top for full card feel */
+.move-history-scroll-panel::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0; top: 0; right: 0;
+  height: 12px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  background: linear-gradient(90deg, #e8f6ff44 0, #cedbfd0c 100%);
+  z-index: 1;
+  opacity: 0.46;
+  pointer-events: none;
 }
 
 .logo-symbol {

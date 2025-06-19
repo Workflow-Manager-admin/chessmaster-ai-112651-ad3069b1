@@ -903,13 +903,56 @@ function MainContainer() {
             </div>
           </section>
 
-          {/* Move History: glassy modern style, carded, scrollable */}
-          <aside className="modern-glass-blur glass-card history-glass-card" style={styles.moveHistorySection}>
+          {/* Move History: Enhanced glassy card, scrollable, modern */}
+          <aside className="modern-glass-blur glass-card history-glass-card move-history-scroll-panel" style={styles.moveHistorySection}>
             <h3 style={styles.historyTitle}>Move History</h3>
             <ol style={styles.moveList}>
-              {moveHistory.map((move, idx) => (
-                <li key={idx} style={styles.moveItem}>{move}</li>
-              ))}
+              {moveHistory.length === 0 ? (
+                <li style={{
+                  ...styles.moveItem,
+                  color: "#a5b3c8",
+                  fontStyle: "italic",
+                  paddingTop: 16,
+                  opacity: 0.75,
+                  textAlign: "center"
+                }}>
+                  No moves yet. Start playing!
+                </li>
+              ) : (
+                moveHistory.map((move, idx) => (
+                  <li
+                    key={idx}
+                    style={{
+                      ...styles.moveItem,
+                      background: idx % 2 === 0
+                        ? "linear-gradient(90deg,rgba(236,248,255,0.63) 52%,rgba(223,240,255,0.0) 100%)"
+                        : "linear-gradient(93deg,rgba(210,239,255,0.19) 44%,rgba(237,247,255,0.12) 100%)",
+                      borderRadius: "7px",
+                      boxShadow: idx === moveHistory.length - 1
+                        ? "0 0 0 2.5px #7cc9fa44"
+                        : "none",
+                      fontWeight: idx === moveHistory.length - 1 ? 700 : 500,
+                      color: idx === moveHistory.length - 1 ? "#2584c3" : styles.moveItem.color,
+                      marginBottom: 6,
+                      padding: "6.5px 12px 6.5px 6px",
+                      transition: "box-shadow 0.16s, background 0.20s, color 0.18s"
+                    }}
+                  >
+                    <span style={{
+                      fontWeight: 400,
+                      fontSize: "0.99em",
+                      color: "#89aadd",
+                      marginRight: 7,
+                      verticalAlign: "middle",
+                      opacity: 0.85,
+                      userSelect: "none"
+                    }}>
+                      {idx + 1}.
+                    </span>
+                    {move}
+                  </li>
+                ))
+              )}
             </ol>
           </aside>
         </div>
@@ -1121,31 +1164,47 @@ const styles = {
     fontWeight: 500
   },
   moveHistorySection: {
-    background: theme.surface,
-    borderRadius: 14,
-    boxShadow: "0 5px 32px rgba(33,150,243,0.07)",
-    padding: "28px 22px 22px 22px",
-    maxHeight: 458,
-    minWidth: 200,
-    border: `1.5px solid ${theme.accent}`,
-    overflowY: "auto"
+    background: "rgba(251,254,255,0.89)",
+    borderRadius: 16,
+    boxShadow:
+      "0 7px 30px rgba(84,195,253,0.14), 0 2.5px 8px #b6e2ff29, 0 0.5px 2px #bde4ff22",
+    padding: "25px 13px 24px 13px",
+    maxHeight: 448,
+    minHeight: 240,
+    minWidth: 198,
+    border: "1.7px solid #6ec5fb73",
+    overflowY: "auto",
+    outline: "none",
+    position: "relative",
+    zIndex: 0,
+    transition: "box-shadow 0.16s, border 0.13s, background 0.2s"
   },
   historyTitle: {
-    margin: 0,
-    color: theme.accent,
-    fontWeight: 600,
-    fontSize: "1.22rem",
-    marginBottom: 12,
-    letterSpacing: 1.5
+    margin: "0 0 10px 6px",
+    color: "#2196f3",
+    fontWeight: 700,
+    fontSize: "1.19rem",
+    marginBottom: 13,
+    letterSpacing: 1.9,
+    textShadow: "0 1px 9px #94e7ff28"
   },
   moveList: {
-    paddingLeft: 24,
-    margin: 0
+    paddingLeft: 16,
+    margin: 0,
+    listStylePosition: "inside",
+    fontSmooth: "always",
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
+    zIndex: 3,
   },
   moveItem: {
     fontSize: "1.08rem",
-    color: theme.text,
-    marginBottom: 4
+    color: "#24364b",
+    marginBottom: 5,
+    padding: 0,
+    background: "none",
+    borderRadius: "6px",
+    transition: "box-shadow .15s, background .15s, color .14s"
   }
 };
 
