@@ -1,5 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 
+// PUBLIC_INTERFACE
+function useDarkMode(defaultDark = false) {
+  const [isDark, setIsDark] = useState(() => {
+    if(typeof window === 'undefined') return defaultDark;
+    const saved = window.localStorage.getItem('chessDarkMode');
+    return saved === null ? defaultDark : saved === 'true';
+  });
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+    window.localStorage.setItem('chessDarkMode', isDark ? 'true' : 'false');
+  }, [isDark]);
+  return [isDark, setIsDark];
+}
+
 /**
  * Display a countdown clock for each player.
  * Props: time (seconds), active (is ticking), color ('w'/'b'), label (string)
@@ -63,6 +77,9 @@ function Clock({ time, active, color, label }) {
  */
 // PUBLIC_INTERFACE
 function MainContainer() {
+  // --- DARK MODE STATE ---
+  const [darkMode, setDarkMode] = useDarkMode(false);
+
   // --- DIFFICULTY STATE ---
   const [aiDifficulty, setAiDifficulty] = useState('Easy');
   const [aiThinking, setAiThinking] = useState(false);
@@ -785,20 +802,60 @@ function MainContainer() {
 
   // Board rendering
   return (
-    <div style={styles.wrapper}>
+    <div 
+      className={darkMode ? "dark" : ""}
+      style={{
+        ...styles.wrapper, 
+        background: 'var(--base-dark)', 
+        color: 'var(--text-color)'
+      }}
+    >
       {/* Main glass-like App Card */}
-      <div className="main-glass-app-card">
+      <div className={`main-glass-app-card${darkMode ? " dark" : ""}`} style={{background: 'var(--glass-grad)', color: 'var(--text-color)'}}>
         {/* Title/Header area with glass + backdrop */}
         <header className="modern-glass-blur glass-card header-glass" style={styles.headerEnhanced}>
-          <span style={styles.headerBrandArea}>
-            <span style={styles.brandLogoCircle}>
-              <span role="img" aria-label="Chess logo" style={styles.logoSymbolBig}>♟️</span>
+          <div style={{display: "flex", alignItems: "center", width: '100%'}}>
+            {/* DARK MODE TOGGLE CONTROL */}
+            <div style={{marginRight: 23, marginLeft: 2, alignSelf: 'flex-start'}}>
+              <label
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  fontWeight: 700, color: 'var(--brand-text)', fontSize: '1.08rem',
+                  cursor: 'pointer', padding: '3px 6px', borderRadius: 14,
+                  background: 'var(--glass-panel)', boxShadow: '0 2px 14px #84bdfa15',
+                  border: '1.1px solid var(--border-color)', userSelect: 'none'
+                }}
+                tabIndex={0}
+                aria-label="Toggle dark mode"
+              >
+                <input
+                  type="checkbox"
+                  checked={darkMode}
+                  onChange={() => setDarkMode(v => !v)}
+                  style={{ accentColor: '#29a6ff', margin: 0, width: 24, height: 24 }}
+                  aria-checked={darkMode}
+                />
+                <span style={{fontSize:'1.12em'}} aria-hidden="true">
+                  {darkMode
+                    ? <span role="img">🌙</span>
+                    : <span role="img">☀️</span>
+                  }
+                </span>
+                <span style={{fontSize:'0.93em'}}>
+                  {darkMode ? "Dark" : "Light"}
+                </span>
+              </label>
+            </div>
+            <span style={styles.headerBrandArea}>
+              <span style={styles.brandLogoCircle}>
+                <span role="img" aria-label="Chess logo" style={styles.logoSymbolBig}>♟️</span>
+              </span>
+              <span style={styles.brandTextGroup}>
+                <span style={styles.brandTitle}>ChessMaster<span style={styles.brandAIBadge}>AI</span></span>
+                <span style={styles.brandSubtitle}>Modern Chess AI Duel</span>
+              </span>
             </span>
-            <span style={styles.brandTextGroup}>
-              <span style={styles.brandTitle}>ChessMaster<span style={styles.brandAIBadge}>AI</span></span>
-              <span style={styles.brandSubtitle}>Modern Chess AI Duel</span>
-            </span>
-          </span>
+          </div>
         </header>
 
         {/* AI Difficulty selection at the top */}
@@ -1093,17 +1150,14 @@ function MainContainer() {
   );
 }
 
-// --- THEME/COLORS
+/* Theme object uses CSS variables for all color values, so toggling .dark affects everything */
 const theme = {
-  primary: "#4CAF50",
-  secondary: "#FFC107",
-  accent: "#2196F3",
-  background: "#fafbff",
-  surface: "#ffffff",
-  boardLight: "#f0f0f0",
-  boardDark: "#b8d2e6",
-  text: "#222",
-  border: "#e0e0e0"
+  get primary() { return getComputedStyle(document.documentElement).getPropertyValue('--brand-text') || "#2196f3"; },
+  get accent() { return "#29a6ff"; },
+  get background() { return 'var(--base-dark)'; },
+  get surface() { return 'var(--glass-grad)'; },
+  get text() { return 'var(--text-color)'; },
+  get border() { return 'var(--border-color)'; }
 };
 
 // --- CLOCK STYLES ---
@@ -1196,21 +1250,19 @@ const clockStyles = {
 const styles = {
   wrapper: {
     minHeight: "100vh",
-    background: theme.background,
-    color: theme.text,
+    background: 'var(--base-dark)',
+    color: 'var(--text-color)',
     display: "flex",
     flexDirection: "column",
-    fontFamily:
-      "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif"
+    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif"
   },
-  // Header is now enhanced!
   headerEnhanced: {
     display: "flex",
     alignItems: "center",
     gap: 0,
     padding: "28px 40px 22px 41px",
-    background: theme.surface,
-    borderBottom: `2px solid ${theme.accent}44`,
+    background: 'var(--glass-panel)',
+    borderBottom: `2px solid var(--border-color)`,
     letterSpacing: 2,
     boxShadow: "0 8px 38px 0px #8dd6ff23, 0 0.5px 9px #b8eafc23",
     borderRadius: "24px 24px 18px 18px",
@@ -1227,7 +1279,7 @@ const styles = {
     width: 64,
     height: 64,
     borderRadius: "50%",
-    background: "linear-gradient(131deg,#fafdff 50%,#c2e6ff 100%)",
+    background: 'var(--brand-circle-bg)',
     boxShadow: "0 4px 24px #98f2f433, 0 2.5px 11px #c4efff27",
     display: "flex",
     alignItems: "center",
@@ -1235,7 +1287,7 @@ const styles = {
     border: "2.8px solid #c2eaff5c",
   },
   logoSymbolBig: {
-    color: theme.primary,
+    color: 'var(--brand-text)',
     fontSize: "2.9rem",
     display: "block",
     filter: "drop-shadow(0 1px 7px #b6eeff44)"
@@ -1246,7 +1298,7 @@ const styles = {
     alignItems: "flex-start"
   },
   brandTitle: {
-    color: theme.accent,
+    color: 'var(--brand-text)',
     fontSize: "2.12rem",
     fontWeight: 800,
     letterSpacing: 1.3,
@@ -1254,7 +1306,7 @@ const styles = {
   },
   brandAIBadge: {
     marginLeft: 12,
-    background: "linear-gradient(135deg,#e8f8ff 40%,#b7eaff 81%)",
+    background: 'var(--brand-badge-bg)',
     color: "#377adc",
     borderRadius: "11px",
     fontWeight: 900,
@@ -1285,14 +1337,14 @@ const styles = {
   },
   difficultyLabel: {
     fontWeight: 500,
-    color: theme.accent,
+    color: 'var(--brand-text)',
     fontSize: "1.02rem",
     letterSpacing: 1
   },
   difficultySelect: {
-    background: "#f0f0f8",
-    color: theme.text,
-    border: `1.5px solid ${theme.accent}`,
+    background: darkBGvar('--glass-sheen', "#24292e"),
+    color: 'var(--text-color)',
+    border: `1.5px solid var(--brand-text)`,
     borderRadius: 5,
     padding: "5.5px 12px",
     fontSize: "1.05rem",
@@ -1334,16 +1386,14 @@ const styles = {
   chessboardModern: {
     display: "flex",
     flexDirection: "column",
-    border: `4.2px solid #6ec2ff88`,
+    border: `4.2px solid var(--border-color)`,
     borderRadius: "20px",
-    boxShadow:
-      "0 6px 48px 0px rgba(35,142,206,0.10), 0 1.5px 20px 0 rgba(50,165,255,0.09)",
+    boxShadow: "var(--glass-glow, 0 6px 48px 0px rgba(35,142,206,0.10))",
     overflow: "hidden",
     width: 372,
     height: 372,
     margin: 0,
-    background:
-      "linear-gradient(135deg, rgba(216,245,255,0.52) 0%, rgba(120,204,253,0.07) 100%)",
+    background: 'var(--glass-base-bg)',
     backdropFilter: "blur(16px) saturate(1.09)",
     WebkitBackdropFilter: "blur(16px) saturate(1.09)",
     zIndex: 2,
@@ -1375,19 +1425,18 @@ const styles = {
   boardLabel: {
     marginTop: 18,
     fontSize: "1.13rem",
-    color: theme.primary,
+    color: 'var(--brand-text)',
     fontWeight: 500
   },
   moveHistorySection: {
-    background: "rgba(251,254,255,0.89)",
+    background: 'var(--glass-card-history)',
     borderRadius: 16,
-    boxShadow:
-      "0 7px 30px rgba(84,195,253,0.14), 0 2.5px 8px #b6e2ff29, 0 0.5px 2px #bde4ff22",
+    boxShadow: "var(--glass-glow, 0 7px 30px rgba(84,195,253,0.14))",
     padding: "25px 13px 24px 13px",
     maxHeight: 448,
     minHeight: 240,
     minWidth: 198,
-    border: "1.7px solid #6ec5fb73",
+    border: "1.7px solid var(--border-color)",
     overflowY: "auto",
     outline: "none",
     position: "relative",
@@ -1396,7 +1445,7 @@ const styles = {
   },
   historyTitle: {
     margin: "0 0 10px 6px",
-    color: "#2196f3",
+    color: 'var(--brand-text)',
     fontWeight: 700,
     fontSize: "1.19rem",
     marginBottom: 13,
@@ -1414,14 +1463,19 @@ const styles = {
   },
   moveItem: {
     fontSize: "1.08rem",
-    color: "#24364b",
+    color: "var(--text-color)",
     marginBottom: 5,
     padding: 0,
     background: "none",
     borderRadius: "6px",
     transition: "box-shadow .15s, background .15s, color .14s"
-  },
-  // Responsive tweaks (overwritten with media queries via App.css if needed)
+  }
 };
+// Helper to support fallback for dark
+function darkBGvar(cssVar, fallback) {
+  if (typeof window === "undefined") return fallback;
+  const style = getComputedStyle(document.documentElement);
+  return style.getPropertyValue(cssVar) || fallback;
+}
 
 export default MainContainer;

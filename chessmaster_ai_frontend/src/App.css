@@ -1,17 +1,57 @@
+/* Light Theme Variables (default) */
 :root {
-  --base-light: #00ffff;
-  --base-dark: #00008b;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
+  --base-light: #e9f7ff;
+  --base-dark: #000e22;
+  --glass-base-bg: rgba(240,248,255,0.38);
+  --glass-sheen: rgba(247,250,255,0.54);
+  --glass-glow: 0 8px 32px 0 rgba(31,92,189,0.10), 0 1.5px 32px 0 rgba(90,211,255,0.08);
+  --glass-border: 1.7px solid rgba(136,196,255,0.17);
+  --glass-grad: linear-gradient(135deg, rgba(230,245,255,0.09) 8%, rgba(20,69,131,0.12) 96%);
+  --glass-panel: linear-gradient(120deg, rgba(241,255,250,0.57) 0%, rgba(27,39,82,0.13) 100%);
+  --glass-card-history: linear-gradient(115deg, rgba(237,251,255,0.63) 0%, rgba(93,188,255,0.07) 90%);
+  --glass-status: linear-gradient(117deg,rgba(251,253,255,0.73) 0%,rgba(120,204,253,0.14) 100%);
+  --text-color: #191b1e;
+  --text-secondary: rgba(32, 33, 37, 0.7);
+  --border-color: rgba(70, 160, 255, 0.09);
+  --move-list-bg-odd: linear-gradient(90deg,rgba(236,248,255,0.63) 52%,rgba(223,240,255,0.0) 100%);
+  --move-list-bg-even: linear-gradient(93deg,rgba(210,239,255,0.19) 44%,rgba(237,247,255,0.12) 100%);
+  --avatar-bg-user: linear-gradient(112deg,#fafcffcb,#b0eff796 80%,#edfaff41 100%);
+  --avatar-bg-ai: linear-gradient(118deg,#e5f0fdbe 10%,#9ee4fe96 73%,#c3caff36 100%);
+  --brand-circle-bg: linear-gradient(131deg,#fafdff 50%,#c2e6ff 100%);
+  --brand-text: #2196f3;
+  --brand-badge-bg: linear-gradient(135deg,#e8f8ff 40%,#b7eaff 81%);
 }
+
+.dark {
+  --base-light: #252e39;
+  --base-dark: #0d1826;
+  --glass-base-bg: rgba(26,40,55,0.45);
+  --glass-sheen: rgba(48,58,79,0.24);
+  --glass-glow: 0 8px 32px 0 rgba(8,39,86,0.22), 0 1.5px 32px 0 rgba(50,44,98,0.13);
+  --glass-border: 1.7px solid rgba(62,110,190,0.13);
+  --glass-grad: linear-gradient(135deg, rgba(19,32,49,0.22) 18%, rgba(17,32,52,0.25) 86%);
+  --glass-panel: linear-gradient(120deg, rgba(31,40,55,0.69) 0%, rgba(41,48,79,0.13) 100%);
+  --glass-card-history: linear-gradient(115deg, rgba(51,79,112,0.63) 0%, rgba(26,52,81,0.17) 95%);
+  --glass-status: linear-gradient(117deg,rgba(21,31,51,0.88) 0%,rgba(20,44,77,0.16) 100%);
+  --text-color: #eef4fc;
+  --text-secondary: rgba(201, 217, 255, 0.7);
+  --border-color: rgba(85, 180, 245, 0.15);
+  --move-list-bg-odd: linear-gradient(90deg,rgba(41,57,87,0.46) 52%,rgba(76,86,114,0.0) 100%);
+  --move-list-bg-even: linear-gradient(93deg,rgba(30,51,81,0.20) 54%,rgba(37,77,117,0.13) 100%);
+  --avatar-bg-user: linear-gradient(115deg,#30445f 44%,#1d313f 98%);
+  --avatar-bg-ai: linear-gradient(110deg,#1c3752 16%,#31527e 82%,#3857a1 100%);
+  --brand-circle-bg: linear-gradient(131deg, #2b3e57 60%, #436d95 100%);
+  --brand-text: #29a6ff;
+  --brand-badge-bg: linear-gradient(135deg,#283343 30%,#5a90c6 71%);
+}
+
 
 /* --- Glassmorphism containers & card utilities --- */
 .glass-card {
-  background: rgba(247,250,255,0.38);
-  box-shadow: 0 8px 32px 0 rgba(31,92,189,0.10), 0 1.5px 32px 0 rgba(90,211,255,0.08);
+  background: var(--glass-base-bg);
+  box-shadow: var(--glass-glow);
   border-radius: 22px;
-  border: 1.7px solid rgba(136,196,255,0.17);
+  border: var(--glass-border);
   backdrop-filter: blur(13px) saturate(1.19);
   -webkit-backdrop-filter: blur(13px) saturate(1.19);
   transition: box-shadow .17s, border .15s, background .18s;
