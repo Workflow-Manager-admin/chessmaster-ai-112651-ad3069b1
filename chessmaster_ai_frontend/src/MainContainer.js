@@ -58,9 +58,16 @@ function Clock({ time, active, color, label }) {
   );
 }
 
+/**
+ * Main chess container with selectable AI difficulty and delayed AI move.
+ */
 // PUBLIC_INTERFACE
 function MainContainer() {
-  // ------ CHESS ENGINE LOGIC (omitted for brevity, same as previous) ------
+  // --- DIFFICULTY STATE ---
+  const [aiDifficulty, setAiDifficulty] = useState('Easy');
+  const [aiThinking, setAiThinking] = useState(false);
+
+  // ------ CHESS ENGINE LOGIC ------
   function getInitialBoard() {
     const empty = Array(8).fill(null);
     return [
@@ -294,23 +301,104 @@ function MainContainer() {
     }
   }
 
-  // AI move logic: select and play a random legal move for the given color (AI plays black)
+  // AI move logic: choose based on difficulty and apply delay before playing
   function aiMove(currentBoard, currentTurn, currentCastling, currentEnPassant, currentHistory) {
-    const moves = [];
-    for (let r = 0; r < 8; ++r) {
-      for (let c = 0; c < 8; ++c) {
-        if (currentBoard[r][c]?.color === currentTurn) {
-          const pieceMoves = getLegalMoves(currentBoard, [r,c], currentTurn, currentCastling, currentEnPassant)
-            .filter(m => isMoveLegal(currentBoard, [r,c], m.to, currentTurn, currentCastling, currentEnPassant));
-          for (const m of pieceMoves) {
-            moves.push({from: [r, c], to: m.to});
+    let aiDelaySec = ({
+      Easy: 0.9 + 1 * Math.random(),
+      Medium: 1.3 + 1 * Math.random(),
+      Hard: 1.8 + Math.random(),
+    })[aiDifficulty];
+    let aiDelayMs = Math.round(aiDelaySec * 1000);
+
+    // Pause clock during AI move (clear interval)
+    if (clockIntervalRef.current) clearInterval(clockIntervalRef.current);
+    setAiThinking(true);
+
+    // Select an AI move based on difficulty
+    function selectAIMove(difficulty) {
+      const moves = [];
+      for (let r = 0; r < 8; ++r) {
+        for (let c = 0; c < 8; ++c) {
+          if (currentBoard[r][c]?.color === currentTurn) {
+            const pieceMoves = getLegalMoves(currentBoard, [r, c], currentTurn, currentCastling, currentEnPassant)
+              .filter(m => isMoveLegal(currentBoard, [r, c], m.to, currentTurn, currentCastling, currentEnPassant));
+            for (const m of pieceMoves) {
+              moves.push({ from: [r, c], to: m.to });
+            }
           }
         }
       }
+      if (moves.length === 0) return null;
+
+      if (difficulty === "Easy") {
+        // Random move
+        return moves[Math.floor(Math.random() * moves.length)];
+      }
+      if (difficulty === "Medium") {
+        // Prefer captures; else random
+        const captures = moves.filter(({ to }) => currentBoard[to[0]][to[1]]);
+        if (captures.length > 0) return captures[Math.floor(Math.random() * captures.length)];
+        return moves[Math.floor(Math.random() * moves.length)];
+      }
+      // Hard: Simple shallow minimax-like evaluation (material only, 1 ply)
+      let bestMove = moves[0], bestScore = -Infinity;
+      for (const move of moves) {
+        let testBoard = deepCopyBoard(currentBoard);
+        const piece = testBoard[move.from[0]][move.from[1]];
+        const captured = testBoard[move.to[0]][move.to[1]] ? testBoard[move.to[0]][move.to[1]] : null;
+        testBoard[move.to[0]][move.to[1]] = piece;
+        testBoard[move.from[0]][move.from[1]] = null;
+        let score = materialScore(testBoard, currentTurn) - materialScore(testBoard, currentTurn === 'w' ? 'b' : 'w');
+        // Bonus if this move captures higher value
+        if (captured) {
+          score += getPieceValue(captured.type);
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = move;
+        }
+      }
+      return bestMove;
     }
-    if (moves.length === 0) return;
-    const choice = moves[Math.floor(Math.random() * moves.length)];
-    aiPlayMove(choice.from, choice.to, currentBoard, currentHistory, currentCastling, currentEnPassant, currentTurn);
+    // Assign piece values for 'material only' evaluation
+    function getPieceValue(type) {
+      switch (type) {
+        case 'q': return 9;
+        case 'r': return 5;
+        case 'b':
+        case 'n': return 3;
+        case 'p': return 1;
+        default: return 0;
+      }
+    }
+    function materialScore(bd, who) {
+      let score = 0;
+      for (let r = 0; r < 8; ++r)
+        for (let c = 0; c < 8; ++c) {
+          const p = bd[r][c];
+          if (p && p.color === who) score += getPieceValue(p.type);
+        }
+      return score;
+    }
+
+    const chosenMove = selectAIMove(aiDifficulty);
+    if (!chosenMove) {
+      setAiThinking(false);
+      return;
+    }
+
+    setTimeout(() => {
+      setAiThinking(false);
+      aiPlayMove(
+        chosenMove.from,
+        chosenMove.to,
+        currentBoard,
+        currentHistory,
+        currentCastling,
+        currentEnPassant,
+        currentTurn
+      );
+    }, aiDelayMs);
   }
 
   function aiPlayMove(from, to, localBoard, localHistory, localCastling, localEnPassant, localTurn) {
@@ -443,9 +531,9 @@ function MainContainer() {
 
     if (nextStatus === "running" || nextStatus === "check") {
       if (nextTurn === "b") {
-        setTimeout(() => {
+        if (!aiThinking) {
           aiMove(newBoard, "b", newCastling, newEnPassant, [...moveHistory, moveText]);
-        }, 380);
+        }
       }
     }
   }
@@ -458,6 +546,26 @@ function MainContainer() {
         <span style={styles.logoSymbol}>♟️</span>
         <span style={styles.appName}>ChessMaster AI</span>
       </header>
+
+      {/* AI Difficulty selection at the top */}
+      <div style={styles.difficultyBar}>
+        <span style={styles.difficultyLabel}>AI Difficulty:&nbsp;</span>
+        <select
+          value={aiDifficulty}
+          onChange={e => setAiDifficulty(e.target.value)}
+          style={styles.difficultySelect}
+          aria-label="Select AI Difficulty"
+        >
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+        {aiThinking && (
+          <span style={styles.thinkingHint}>
+            <span style={styles.thinkingDot}>•</span> AI is thinking...
+          </span>
+        )}
+      </div>
 
       <div style={styles.gridContainer}>
         {/* Center Chessboard and clocks */}
@@ -643,6 +751,48 @@ const styles = {
   },
   appName: {
     color: theme.accent
+  },
+  difficultyBar: {
+    width: "100%",
+    padding: "16px 40px 0 40px",
+    display: "flex",
+    alignItems: "center",
+    gap: 13,
+    marginBottom: 0,
+    background: "transparent",
+    minHeight: 42
+  },
+  difficultyLabel: {
+    fontWeight: 500,
+    color: theme.accent,
+    fontSize: "1.02rem",
+    letterSpacing: 1
+  },
+  difficultySelect: {
+    background: "#f0f0f8",
+    color: theme.text,
+    border: `1.5px solid ${theme.accent}`,
+    borderRadius: 5,
+    padding: "5.5px 12px",
+    fontSize: "1.05rem",
+    fontWeight: 500,
+    outline: "none"
+  },
+  thinkingHint: {
+    marginLeft: 27,
+    color: "#FF9933",
+    fontWeight: 600,
+    letterSpacing: "0.5px",
+    fontSize: "1.06rem",
+    display: "flex",
+    gap: 5,
+    alignItems: "center",
+    opacity: 0.96
+  },
+  thinkingDot: {
+    fontSize: "1.6rem",
+    color: "#F47C22",
+    animation: "blink 1.2s infinite alternate"
   },
   gridContainer: {
     display: "grid",
